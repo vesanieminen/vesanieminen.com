@@ -1,0 +1,17 @@
+{
+"companyName": "DefaultCompany",
+"productName": "Vaadin Lounge",
+"productVersion": "0.1",
+"dataUrl": "lounge.data.unityweb",
+"wasmCodeUrl": "lounge.wasm.code.unityweb",
+"wasmFrameworkUrl": "lounge.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"backgroundUrl": "lounge.jpg",
+"splashScreenStyle": "Dark",
+"backgroundColor": "#FFFFFF",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.3.0f6"
+}
