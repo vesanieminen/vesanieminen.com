@@ -15,7 +15,12 @@ export class CarRacer {
         this.roadWidth = roadWidth;
         this.isPlayer = isPlayer;
         this.colliding = false;
+        this._lastExplodeTime = 0; // timestamp (ms) of last explosion — debounce per car
+        this.destroyed = false;    // permanently destroyed by a hard hit
         this.curveLength = curve.getLength(); // cache for collision response
+
+        // Set rotation order for correct yaw-pitch-roll with hills
+        this.model.rotation.order = 'YXZ';
 
         // Create debug collider wireframe (hidden by default)
         this._createDebugCollider();
@@ -39,6 +44,11 @@ export class CarRacer {
         this.finished = false;
         this.finishTime = 0;
         this.totalLaps = 3;
+
+        // Jump / ramp physics
+        this.jumpVelocity = 0;
+        this.jumpHeight = 0;
+        this.isAirborne = false;
 
         this.updatePosition();
     }
@@ -76,7 +86,7 @@ export class CarRacer {
 
         this.model.position.set(
             point.x + offset.x,
-            0.2 + bankLift + bankY,
+            point.y + 0.2 + bankLift + bankY + this.jumpHeight,
             point.z + offset.z
         );
 
@@ -84,8 +94,24 @@ export class CarRacer {
         const angle = Math.atan2(tangent.x, tangent.z);
         this.model.rotation.y = angle - this.steering * 0.15;
 
-        // Roll car to match road banking
-        this.model.rotation.z = -bankAngle;
+        // Pitch: airborne cars tilt based on jump velocity, grounded cars follow terrain
+        if (this.isAirborne) {
+            this.model.rotation.x = -Math.atan2(this.jumpVelocity * 0.04, 1);
+            this.model.rotation.z = 0; // no banking in air
+        } else {
+            if (this.frames.tangents3D) {
+                const t3d0 = this.frames.tangents3D[idx0];
+                const t3d1 = this.frames.tangents3D[idx1];
+                const ty = t3d0.y + (t3d1.y - t3d0.y) * frac;
+                const txz0 = Math.sqrt(t3d0.x * t3d0.x + t3d0.z * t3d0.z);
+                const txz1 = Math.sqrt(t3d1.x * t3d1.x + t3d1.z * t3d1.z);
+                const txz = txz0 + (txz1 - txz0) * frac;
+                this.model.rotation.x = -Math.atan2(ty, txz);
+            }
+
+            // Roll car to match road banking
+            this.model.rotation.z = -bankAngle;
+        }
 
         // Spin wheels (rolling)
         const wheels = this.model.userData.wheels;
@@ -117,6 +143,16 @@ export class CarRacer {
         if (this.finished) {
             this.speed *= Math.pow(0.98, step);
             this.trackProgress += this.speed * step;
+            // Keep jump physics running for finished cars mid-air
+            if (this.isAirborne) {
+                this.jumpHeight += this.jumpVelocity * dt;
+                this.jumpVelocity -= 25 * dt;
+                if (this.jumpHeight <= 0) {
+                    this.jumpHeight = 0;
+                    this.jumpVelocity = 0;
+                    this.isAirborne = false;
+                }
+            }
             this.updatePosition();
             return;
         }
@@ -140,8 +176,43 @@ export class CarRacer {
         // Move along track
         this.trackProgress += this.speed * step;
 
+        // Jump physics (gravity + landing)
+        if (this.isAirborne) {
+            this.jumpHeight += this.jumpVelocity * dt;
+            this.jumpVelocity -= 25 * dt; // gravity
+            if (this.jumpHeight <= 0) {
+                this.jumpHeight = 0;
+                this.jumpVelocity = 0;
+                this.isAirborne = false;
+            }
+        }
+
+        // Ramp detection — check if we crossed a ramp trigger point (at ramp base)
+        const currentProgress = ((this.trackProgress % 1) + 1) % 1;
+        if (this.frames.ramps && !this.isAirborne) {
+            for (const ramp of this.frames.ramps) {
+                const trigger = ramp.triggerT != null ? ramp.triggerT : ramp.t;
+                const prev = this.lastProgress;
+                const curr = currentProgress;
+                let crossed = false;
+                if (prev <= curr) {
+                    crossed = prev < trigger && curr >= trigger;
+                } else {
+                    // Wrapped around (crossing lap boundary)
+                    crossed = prev < trigger || curr >= trigger;
+                }
+                // Must be fast enough AND on the correct side of the road
+                const onRampSide = !ramp.side || (this.lateralOffset * ramp.side > -0.2);
+                if (crossed && this.speed > this.maxSpeed * 0.3 && onRampSide) {
+                    const speedFrac = this.speed / this.maxSpeed;
+                    this.jumpVelocity = 6 + speedFrac * 8;
+                    this.isAirborne = true;
+                    this.jumpHeight = 0.01;
+                }
+            }
+        }
+
         // Lap detection
-        const currentProgress = this.trackProgress % 1;
         if (this.lastProgress > 0.9 && currentProgress < 0.1) {
             this.lap++;
         }
@@ -229,17 +300,25 @@ export class CarRacer {
         };
     }
 
-    // Resolve collisions between all racers using OBB physics
-    // Returns true if the player car was involved in a collision
+    // Resolve collisions between all racers using OBB physics.
+    // Returns { playerHit, explodedRacers } where explodedRacers are AI cars
+    // newly hit by the player (4s cooldown per car).
     static resolveCollisions(racers) {
         // Reset collision flag for debug coloring
         for (const r of racers) r.colliding = false;
         let playerHit = false;
+        const explodedRacers = [];
+        const now = Date.now();
 
         for (let i = 0; i < racers.length; i++) {
             for (let j = i + 1; j < racers.length; j++) {
                 const a = racers[i];
                 const b = racers[j];
+
+                // Skip invisible (currently exploded), destroyed, or airborne cars
+                if (!a.model.visible || !b.model.visible) continue;
+                if (a.destroyed || b.destroyed) continue;
+                if (a.isAirborne || b.isAirborne) continue;
 
                 // Quick circle pre-check (skip if too far for any possible overlap)
                 const dx = b.model.position.x - a.model.position.x;
@@ -252,7 +331,15 @@ export class CarRacer {
 
                 a.colliding = true;
                 b.colliding = true;
-                if (a.isPlayer || b.isPlayer) playerHit = true;
+                if (a.isPlayer || b.isPlayer) {
+                    playerHit = true;
+                    // Track which AI car was newly hit for the explosion effect
+                    const aiRacer = a.isPlayer ? b : a;
+                    if (!aiRacer.isPlayer && now - aiRacer._lastExplodeTime > 4000) {
+                        aiRacer._lastExplodeTime = now;
+                        explodedRacers.push(aiRacer);
+                    }
+                }
 
                 const { overlap, nx, nz } = hit;
 
@@ -316,7 +403,7 @@ export class CarRacer {
             }
         }
 
-        return playerHit;
+        return { playerHit, explodedRacers };
     }
 }
 
@@ -473,7 +560,10 @@ export class RaceCamera {
         this.targetPosition.copy(carPos).add(cameraOffset);
         this.targetLookAt.copy(carPos).add(new THREE.Vector3(0, 1, 0));
 
-        this.camera.position.lerp(this.targetPosition, this.smoothFactor);
+        // Split lerp: faster Y tracking to prevent camera clipping through hills
+        this.camera.position.x += (this.targetPosition.x - this.camera.position.x) * this.smoothFactor;
+        this.camera.position.z += (this.targetPosition.z - this.camera.position.z) * this.smoothFactor;
+        this.camera.position.y += (this.targetPosition.y - this.camera.position.y) * 0.12;
         this.camera.lookAt(this.targetLookAt);
     }
 }
