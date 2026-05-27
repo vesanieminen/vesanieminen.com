@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artur Signell — week of May 20–27, 2026 · Vaadin Flow highlights</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a22;
+    --panel-2: #1c2230;
+    --border: #2a3142;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --accent: #4a9eff;
+    --accent-soft: #1f3a5f;
+    --green: #3ecf8e;
+    --amber: #f5b54a;
+    --red: #ef5b6b;
+    --code-bg: #0b0d12;
+    --tag-bg: #232a3a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --panel-2: #f1f3f7;
+      --border: #d9dee7;
+      --text: #1a1f2c;
+      --muted: #5b6478;
+      --accent: #0c66e4;
+      --accent-soft: #dbeafe;
+      --green: #138a4f;
+      --amber: #b06a00;
+      --red: #c0392b;
+      --code-bg: #f0f2f6;
+      --tag-bg: #eef1f6;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 15.5px;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+  header .eyebrow {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 28px;
+    line-height: 1.25;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  header .sub {
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+  header .sub a { color: var(--accent); text-decoration: none; }
+  header .sub a:hover { text-decoration: underline; }
+
+  h2 {
+    font-size: 21px;
+    margin: 40px 0 14px;
+    letter-spacing: -0.005em;
+  }
+  h3 {
+    font-size: 16.5px;
+    margin: 22px 0 8px;
+    letter-spacing: -0.005em;
+  }
+  p { margin: 0 0 12px; }
+  ul { padding-left: 22px; margin: 0 0 12px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 14px 0;
+  }
+  .card.accent { border-left: 3px solid var(--accent); }
+  .card.green  { border-left: 3px solid var(--green); }
+  .card.amber  { border-left: 3px solid var(--amber); }
+  .card.red    { border-left: 3px solid var(--red); }
+
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0;
+  }
+  .card-title a { color: var(--text); }
+  .card-title a:hover { color: var(--accent); }
+
+  .tags { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--tag-bg);
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .tag.merged   { background: rgba(62,207,142,0.12); color: var(--green); }
+  .tag.open     { background: rgba(74,158,255,0.14); color: var(--accent); }
+  .tag.backport { background: rgba(245,181,74,0.14); color: var(--amber); }
+  .tag.breaking { background: rgba(239,91,107,0.14); color: var(--red); }
+
+  code, pre {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13.5px;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 10px 0 14px;
+    line-height: 1.5;
+  }
+  pre code { background: transparent; border: 0; padding: 0; }
+  .why {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  .tldr {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+  }
+  .tldr h2 { margin-top: 0; font-size: 15.5px; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); }
+  .tldr ul { margin: 6px 0 0; }
+
+  .toc {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 32px;
+    font-size: 14.5px;
+  }
+  .toc ol { margin: 6px 0 0; padding-left: 22px; }
+  .toc li { margin: 2px 0; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .version-pill {
+    display: inline-block;
+    font-size: 11.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 500;
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Weekly digest · week of May 20–27, 2026</div>
+  <h1>What Artur shipped this week — through a customer-project lens</h1>
+  <p class="sub">
+    Filtered view of <a href="https://github.com/Artur-">github.com/Artur-</a>'s public activity.
+    Internal refactors and test-only cleanup are omitted; emphasis is on things that change how you write or maintain
+    a Vaadin Flow app — across any Flow version you currently support.
+  </p>
+</header>
+
+<div class="tldr">
+  <h2>TL;DR</h2>
+  <ul>
+    <li><strong>One fix is already on its way to 24.10</strong> — the <code>+</code>-in-URL <code>InvalidLocationException</code>. Worth knowing about regardless of which version your customer is on.</li>
+    <li><strong>Two Signal bugs were fixed on main</strong> — false infinite-loop on cached self-update, and stale reads during concurrent UIDL requests. If you've adopted Signals, both are footguns you can stop working around.</li>
+    <li><strong>The new <em>Action / Trigger</em> framework</strong> is the headline feature in development. Clipboard, fullscreen, download, open-in-new-tab, resize observation — all becoming typed Java APIs instead of hand-rolled <code>executeJs</code> blobs. Not in a release yet; track if you have such code today.</li>
+    <li><strong>Named parameters for <code>executeJs</code></strong> are coming. If you have customer code with long <code>$0</code>/<code>$1</code> snippets, plan a small refactor once it ships.</li>
+  </ul>
+</div>
+
+<div class="toc">
+  <strong>In this report</strong>
+  <ol>
+    <li><a href="#fixes">Production-relevant bug fixes</a></li>
+    <li><a href="#actions">New Action / Trigger framework</a></li>
+    <li><a href="#api">Smaller API improvements you'll actually use</a></li>
+    <li><a href="#tooling">Tooling &amp; dependency bumps</a></li>
+    <li><a href="#process">Project-workflow improvements (spec-driven)</a></li>
+    <li><a href="#docs">Docs</a></li>
+  </ol>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="fixes">1. Production-relevant bug fixes</h2>
+<p>These are the items most likely to bite a customer app you're maintaining today.</p>
+
+<div class="card red">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24414">URLs with <code>+</code> in the path no longer throw <code>InvalidLocationException</code></a></h3>
+    <span class="tags">
+      <span class="tag merged">merged</span>
+      <span class="tag backport">cherry-picked to 24.10</span>
+      <span class="version-pill">24.10.x</span>
+    </span>
+  </div>
+  <p>
+    Re-encodes the <code>location</code> query parameter on the init request so a literal <code>+</code> in the path
+    (e.g. <code>/+/dashboard</code>) survives the servlet container's query-parameter decoding. Previously the <code>+</code>
+    was decoded as a space and Flow threw <code>InvalidLocationException: Relative path cannot start with /</code>.
+  </p>
+  <p class="why">
+    The regression was introduced in #22791 to preserve <code>%2F</code> in wildcard parameters, but double-encoding
+    handles that case correctly. If you have a workaround in a customer app (URL rewriting, route alias, etc.),
+    you can remove it once the 24.10 patch is out.
+  </p>
+</div>
+
+<div class="card red">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24400">Shared <code>Signal</code> reads stale value during concurrent UIDL requests</a></h3>
+    <span class="tags">
+      <span class="tag merged">merged</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <p>
+    When a shared signal is updated concurrently with an in-flight UIDL request, effects associated with that UI
+    would run against the request's repeatable-read transaction and see the cached old value, silently missing the update.
+    The session-scoped transaction is now cleared <em>before</em> pending access tasks run, so effects see fresh values.
+  </p>
+  <p class="why">
+    Originated from a customer Slack thread. If you use server-side <code>Signal</code>s shared across UIs (cross-tab
+    notifications, multi-user dashboards) this is the kind of subtle staleness that's hard to reproduce locally.
+  </p>
+</div>
+
+<div class="card red">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24412">False infinite-loop exception on cached <code>Signal</code> self-update</a></h3>
+    <span class="tags">
+      <span class="tag merged">merged</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <p>
+    An effect reading from a cached signal whose value is stale would trigger a recompute + <code>submit()</code>,
+    which then notified the still-active effect — and was wrongly flagged as an infinite loop. That's now treated
+    as lazy evaluation, not a loop.
+  </p>
+  <p class="why">
+    If you've used cached signals and seen spurious <em>"infinite loop detected"</em> exceptions in dev,
+    this is the fix. No more <code>try/catch</code> workarounds.
+  </p>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="actions">2. New Action / Trigger framework</h2>
+<p>
+  A declarative server-side API for binding browser gestures (click, key, resize, …) to outcomes that involve
+  browser-only APIs (clipboard, fullscreen, downloads, popups). The pattern replaces hand-rolled <code>executeJs</code> snippets
+  with typed Java actions whose success/error payloads come back to the UI thread automatically.
+</p>
+<p>
+  <strong>Status:</strong> primitives and the first three actions are <em>merged on main</em>; several concrete actions are open PRs.
+  Nothing here is in a released version yet — but if you're maintaining customer code that already does
+  <code>navigator.clipboard.writeText(...)</code> through <code>executeJs</code>, it's worth tracking.
+</p>
+
+<div class="card green">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24394">Foundation: <code>PromiseAction&lt;T&gt;</code>, <code>CopyTextToClipboardAction</code>, <code>RequestFullscreenAction</code></a></h3>
+    <span class="tags">
+      <span class="tag merged">merged</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <p>
+    <code>PromiseAction&lt;T&gt;</code> is the generic primitive for any gesture-bound browser API that returns a promise.
+    Subclasses override the JS expression; the base wires success/error back to the UI thread, with Jackson-decoded payload.
+  </p>
+  <pre><code>// Future shape (main, not yet released)
+button.addClickListener(e -&gt; { /* server work */ });
+button.addTrigger(new CopyTextToClipboardAction(() -&gt; user.getEmail()));</code></pre>
+  <p class="why">
+    Replaces the awkward "build a JS blob + register a return channel" recipe.
+  </p>
+</div>
+
+<div class="card green">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24397">Read from clipboard: <code>ReadFromClipboardAction</code> + <code>JsBuilder.callback</code> primitive</a></h3>
+    <span class="tags">
+      <span class="tag merged">merged</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <p>
+    Returns a <code>ClipboardPayload(String text, String html)</code> from <code>navigator.clipboard.read()</code>.
+    Also adds the generic <code>JsBuilder.callback(Class&lt;T&gt;, Consumer&lt;T&gt;)</code> primitive that lets any
+    custom action route a typed payload from client JS to the server.
+  </p>
+  <p class="why">
+    First action that decodes a structured payload, not just success/failure. The <code>callback</code> primitive is
+    what you'd reach for if you build your own action.
+  </p>
+</div>
+
+<div class="card accent">
+  <div class="card-head">
+    <h3 class="card-title">Open: more concrete actions</h3>
+    <span class="tags">
+      <span class="tag open">open PRs</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <ul>
+    <li><a href="https://github.com/vaadin/flow/pull/24432"><code>DownloadAction</code></a> — static URL, <code>DownloadHandler</code>, or client-resolved <code>Input&lt;String&gt;</code>. Synthesises an <code>&lt;a download&gt;</code> click inside the user gesture.</li>
+    <li><a href="https://github.com/vaadin/flow/pull/24431"><code>OpenInNewTabAction</code></a> — <code>window.open</code> with <code>noopener,noreferrer</code> by default. Survives popup-blocker rules because it runs inside a real user gesture.</li>
+    <li><a href="https://github.com/vaadin/flow/pull/24436"><code>CallbackAction&lt;T&gt;</code> + <code>SetSignalAction</code></a> — push any client-side value back into server state, or directly into a <code>Signal</code>.</li>
+    <li><a href="https://github.com/vaadin/flow/pull/24437"><code>SizeTrigger</code> + <code>ElementResize.ts</code></a> — fires on element resize via <code>ResizeObserver</code>; pair with <code>SetSignalAction</code> for a server-side <code>sizeSignal()</code>.</li>
+    <li><a href="https://github.com/vaadin/flow/pull/24428"><code>SignalInput&lt;T&gt;</code></a> — use a server-side <code>Signal</code> as the value source of an action without first projecting it onto a DOM property.</li>
+  </ul>
+  <p class="why">
+    Customer code that today does <code>el.executeJs("window.open($0, '_blank')", url)</code>,
+    a hand-rolled <code>ResizeObserver</code> attach, or "click an invisible &lt;a&gt; to trigger a download" will get cleaner equivalents.
+  </p>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="api">3. Smaller API improvements you'll actually use</h2>
+
+<div class="card accent">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24386">Named parameters for <code>executeJs</code></a></h3>
+    <span class="tags">
+      <span class="tag open">open</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <p>Today:</p>
+  <pre><code>element.executeJs("doSomething($0, $1)", foo, bar);</code></pre>
+  <p>Soon:</p>
+  <pre><code>element.executeJs("doSomething(foo, bar)")
+       .withParameter("foo", foo)
+       .withParameter("bar", bar);</code></pre>
+  <p class="why">
+    Positional <code>$0</code>/<code>$1</code> keep working. The <code>withParameter</code> mechanism is purely
+    server-side: it prepends <code>let foo=$N;</code> to the expression. Same helper exists on <code>JsFunction</code>.
+    <code>callJsFunction</code> deliberately stays unchanged. Big readability win for long snippets.
+  </p>
+</div>
+
+<div class="card accent">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24408">Virtual-aware component tree traversal helpers</a></h3>
+    <span class="tags">
+      <span class="tag open">open</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <p>
+    <code>ComponentUtil.getAllChildren(component)</code> and <code>ComponentUtil.streamDescendants(component)</code>
+    — both include virtual children (slotted helpers like <code>addToFooter</code>, overlays attached to the UI,
+    the client-side routing wrapper).
+  </p>
+  <p class="why">
+    If you've ever reached into <code>VirtualChildrenList</code> (or wondered why <code>getChildren()</code>
+    doesn't see the dialog you just opened) this is the supported replacement. Most customer codebases have at
+    least one tree-walker that this simplifies.
+  </p>
+</div>
+
+<div class="card amber">
+  <div class="card-head">
+    <h3 class="card-title"><a href="https://github.com/vaadin/flow/pull/24425"><code>NativeLabel.setFor()</code> auto-generates IDs</a></h3>
+    <span class="tags">
+      <span class="tag open">open</span>
+      <span class="tag breaking">behavior change</span>
+      <span class="version-pill">main</span>
+    </span>
+  </div>
+  <p>
+    <code>setFor(Component)</code> now defers ID resolution to <code>beforeClientResponse</code> and auto-generates
+    one if the target doesn't have an ID. You no longer have to call <code>setId(...)</code> manually on labelled inputs.
+  </p>
+  <p class="why">
+    Tagged <code>feat!:</code> in commit history — if any customer code relies on the immediate
+    <code>NoSuchElementException</code>-style behavior of the previous implementation, that contract changes.
+    In practice, most usages get cleaner.
+  </p>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="tooling">4. Tooling &amp; dependency bumps</h2>
+<p>All merged on main. Mention here because they ripple downstream the next time a customer bumps Vaadin minor.</p>
+<div class="card">
+  <ul>
+    <li><a href="https://github.com/vaadin/flow/pull/24402">Node 24.16.0</a></li>
+    <li><a href="https://github.com/vaadin/flow/pull/24392">Vite 8.0.14</a></li>
+    <li><a href="https://github.com/vaadin/flow/pull/24404">Tailwind bump</a> &amp; <a href="https://github.com/vaadin/flow/pull/24403">other frontend deps</a></li>
+  </ul>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="process">5. Project-workflow improvements</h2>
+<p>
+  The <a href="https://github.com/vaadin/spec-driven-development-demo"><code>vaadin/spec-driven-development-demo</code></a>
+  repo got several improvements that make it more drop-in-able onto a customer project as a spec-first template.
+</p>
+
+<div class="card accent">
+  <div class="card-head">
+    <h3 class="card-title">Spec-driven development template — now actually portable</h3>
+    <span class="tags">
+      <span class="tag merged">most merged</span>
+    </span>
+  </div>
+  <ul>
+    <li><a href="https://github.com/vaadin/spec-driven-development-demo/pull/32"><code>/new-use-case</code> skill (merged)</a> — interviews you topic-by-topic and writes a filled-in <code>spec/use-cases/use-case-NNN-short-name.md</code>.</li>
+    <li><a href="https://github.com/vaadin/spec-driven-development-demo/pull/35">Jacobson-style use-case template (open)</a> — Goal, Actors, Preconditions, Trigger, Main Flow, Alternative Flows, Postconditions, Business Rules. Acceptance Criteria removed — flows and rules <em>are</em> the AC.</li>
+    <li><a href="https://github.com/vaadin/spec-driven-development-demo/pull/36">AI-tool-agnostic docs (open)</a> — Claude-specific phrasing stripped from all skill bodies; the template now reads cleanly for any AI coding tool a customer uses.</li>
+    <li><a href="https://github.com/vaadin/spec-driven-development-demo/pull/31">Expanded README with workflow walkthrough (merged)</a>.</li>
+  </ul>
+  <p class="why">
+    If you're pitching a spec-first approach to a customer engagement, this is now the reference template to point them at.
+  </p>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="docs">6. Docs</h2>
+<div class="card">
+  <ul>
+    <li><a href="https://github.com/vaadin/docs/pull/5597">vaadin/docs #5597</a> — adds the Vaadin plugin link for Eclipse IDE to the IDE setup docs. Useful pointer for customer teams still on Eclipse.</li>
+  </ul>
+</div>
+
+<footer>
+  Generated 2026-05-27. Filtered from 45 PRs across <code>vaadin/flow</code>, <code>vaadin/docs</code>, <code>vaadin/cdi</code>,
+  <code>vaadin/use-cases</code>, and <code>vaadin/spec-driven-development-demo</code>. Internal refactors
+  (JsFunction migration, theme test cleanup, CI shard rebalancing, spotless config for vaadin/cdi)
+  intentionally omitted — they don't change anything you ship.
+</footer>
+
+</div>
+</body>
+</html>
