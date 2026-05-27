@@ -1,0 +1,1502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow 25.2 — Release Digest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Vaadin Aura — design tokens (approximated for a static page)
+     ============================================================ */
+  :root {
+    /* Surface — Aura "Background" / "Container" / Surface 1 */
+    --aura-surface-page:   #eceff2;
+    --aura-surface-base:   #ffffff;
+    --aura-surface-raised: #ffffff;
+    --aura-surface-sunken: #e9e9e9;
+    --aura-surface-hover:  #e0e2e3;
+
+    /* Border — Aura "Border color secondary / primary" */
+    --aura-border-subtle:  #03030314;
+    --aura-border:         #0b0b0b2e;
+    --aura-border-strong:  #0b0b0b4d;
+
+    /* Text — Aura "Text color" tokens */
+    --aura-text-strong:    #0b0b0b;
+    --aura-text:           #0b0b0b;
+    --aura-text-subtle:    #0b0b0ba6;
+    --aura-text-faint:     #0b0b0b54;
+    --aura-text-on-primary:#ffffff;
+
+    /* Brand & semantic — Aura accent + accent-text tokens */
+    --aura-primary:        #2b59c8;
+    --aura-primary-hover:  #1f47a6;
+    --aura-primary-soft:   #dfe8ff;
+    --aura-success:        #006800;
+    --aura-success-soft:   #dcf1d6;
+    --aura-danger:         #a20519;
+    --aura-danger-soft:    #fbe1e3;
+    --aura-warning:        #962000;
+    --aura-warning-soft:   #ffe2d1;
+    --aura-info:           #2b59c8;
+    --aura-info-soft:      #dfe8ff;
+    --aura-violet:         #5e36be;
+    --aura-violet-soft:    #e6ddf9;
+    --aura-neutral-soft:   #e9e9e9;
+
+    /* Radius — Aura S/M/L = 5/9/15 */
+    --aura-radius-s: 5px;
+    --aura-radius-m: 9px;
+    --aura-radius-l: 15px;
+    --aura-radius-pill: 999px;
+
+    /* Spacing */
+    --aura-space-xs: 4px;
+    --aura-space-s:  8px;
+    --aura-space-m:  16px;
+    --aura-space-l:  24px;
+    --aura-space-xl: 40px;
+    --aura-space-2xl:64px;
+
+    /* Shadows — derived from Aura "Shadow color" #14141433 */
+    --aura-shadow-xs: 0 1px 2px #14141414;
+    --aura-shadow-s:  0 2px 6px #1414141f;
+    --aura-shadow-m:  0 6px 18px #14141433;
+
+    /* Typography — Aura uses Instrument Sans */
+    --aura-font-body: 'Instrument Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --aura-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Surface — Aura dark "Background" / "Container" / Surface 1 */
+      --aura-surface-page:   #13161b;
+      --aura-surface-base:   #1a1e23;
+      --aura-surface-raised: #1a1e23;
+      --aura-surface-sunken: #202328;
+      --aura-surface-hover:  #2a2d32;
+
+      /* Border — Aura dark "Border color secondary / primary" */
+      --aura-border-subtle:  #c2c2c21a;
+      --aura-border:         #c2c2c233;
+      --aura-border-strong:  #c2c2c24d;
+
+      /* Text */
+      --aura-text-strong:    #ffffff;
+      --aura-text:           #ffffff;
+      --aura-text-subtle:    #ffffffa6;
+      --aura-text-faint:     #ffffff54;
+
+      /* Brand & semantic — Aura dark accent-text tokens */
+      --aura-primary:        #96bdff;
+      --aura-primary-hover:  #b3cdff;
+      --aura-primary-soft:   #1a2c54;
+      --aura-success:        #70dd7d;
+      --aura-success-soft:   #14301a;
+      --aura-danger:         #ff8981;
+      --aura-danger-soft:    #3a1c22;
+      --aura-warning:        #ff9a64;
+      --aura-warning-soft:   #36280f;
+      --aura-info:           #96bdff;
+      --aura-info-soft:      #1a2c54;
+      --aura-violet:         #bea3ff;
+      --aura-violet-soft:    #271f3f;
+      --aura-neutral-soft:   #202328;
+
+      --aura-shadow-xs: 0 1px 2px #00000033;
+      --aura-shadow-s:  0 2px 6px #00000055;
+      --aura-shadow-m:  0 6px 18px #00000077;
+    }
+  }
+
+  /* ============================================================
+     Reset & base
+     ============================================================ */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  body {
+    margin: 0;
+    background: var(--aura-surface-page);
+    color: var(--aura-text);
+    font-family: var(--aura-font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  a { color: var(--aura-primary); text-decoration: none; }
+  a:hover { color: var(--aura-primary-hover); text-decoration: underline; }
+
+  /* ============================================================
+     Hero
+     ============================================================ */
+  .hero {
+    background: var(--aura-surface-base);
+    border-bottom: 1px solid var(--aura-border-subtle);
+    padding: var(--aura-space-2xl) 0 var(--aura-space-xl);
+  }
+  .hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--aura-space-l);
+  }
+  .hero .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--aura-space-s);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--aura-primary);
+    background: var(--aura-primary-soft);
+    padding: 5px 12px;
+    border-radius: var(--aura-radius-pill);
+    margin-bottom: var(--aura-space-l);
+  }
+  .hero .badge::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--aura-primary);
+  }
+  .hero h1 {
+    font-weight: 700;
+    font-size: clamp(32px, 4.5vw, 44px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--aura-space-m);
+    max-width: 22ch;
+    color: var(--aura-text-strong);
+  }
+  .hero h1 em { font-style: normal; color: var(--aura-primary); }
+  .hero .lede {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--aura-text-subtle);
+    max-width: 60ch;
+    margin: 0 0 var(--aura-space-xl);
+  }
+  .hero .stats {
+    display: flex;
+    gap: var(--aura-space-2xl);
+    flex-wrap: wrap;
+    padding: var(--aura-space-l) 0;
+    border-top: 1px solid var(--aura-border-subtle);
+    border-bottom: 1px solid var(--aura-border-subtle);
+    max-width: 760px;
+  }
+  .stat .num {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--aura-text-strong);
+    letter-spacing: -0.02em;
+  }
+  .stat .label {
+    font-size: 12.5px;
+    color: var(--aura-text-faint);
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ============================================================
+     Layout
+     ============================================================ */
+  .layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--aura-space-xl) var(--aura-space-l) var(--aura-space-2xl);
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: var(--aura-space-2xl);
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; gap: var(--aura-space-l); padding: var(--aura-space-l); }
+    .nav { position: static; }
+  }
+
+  /* ============================================================
+     Sidebar nav
+     ============================================================ */
+  .nav {
+    position: sticky;
+    top: var(--aura-space-l);
+    font-size: 13.5px;
+  }
+  .nav .heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--aura-text-faint);
+    margin: 0 0 var(--aura-space-s);
+  }
+  .nav ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: nav;
+  }
+  .nav li {
+    counter-increment: nav;
+    margin: 0;
+    border-left: 1px solid var(--aura-border-subtle);
+  }
+  .nav a {
+    display: block;
+    padding: 7px 14px;
+    color: var(--aura-text-subtle);
+    text-decoration: none;
+    font-weight: 500;
+    border-left: 2px solid transparent;
+    margin-left: -1px;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .nav a::before {
+    content: counter(nav, decimal-leading-zero);
+    font-family: var(--aura-font-mono);
+    font-size: 10.5px;
+    color: var(--aura-text-faint);
+    margin-right: 10px;
+    font-weight: 500;
+  }
+  .nav a:hover {
+    color: var(--aura-text-strong);
+    border-left-color: var(--aura-primary);
+    background: var(--aura-surface-hover);
+  }
+
+  /* ============================================================
+     Main column
+     ============================================================ */
+  main { min-width: 0; }
+
+  /* ============================================================
+     Filter bar — chips
+     ============================================================ */
+  .filter-bar {
+    background: var(--aura-surface-base);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-l);
+    padding: var(--aura-space-m) var(--aura-space-l);
+    margin-bottom: var(--aura-space-xl);
+    box-shadow: var(--aura-shadow-xs);
+    position: sticky;
+    top: 16px;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: var(--aura-space-m);
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--aura-text-faint);
+    margin-right: var(--aura-space-xs);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: var(--aura-radius-pill);
+    background: var(--aura-surface-sunken);
+    color: var(--aura-text-subtle);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .15s ease;
+    user-select: none;
+  }
+  .chip .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+  .chip:hover {
+    background: var(--aura-surface-hover);
+    color: var(--aura-text-strong);
+  }
+  .chip.active {
+    background: var(--aura-primary-soft);
+    color: var(--aura-primary);
+    border-color: var(--aura-primary);
+  }
+  .chip.active .dot { opacity: 1; }
+
+  /* Per-flavor chip accent (active state) */
+  .chip[data-flavor="new"].active      { background: var(--aura-success-soft); color: var(--aura-success); border-color: var(--aura-success); }
+  .chip[data-flavor="break"].active    { background: var(--aura-danger-soft);  color: var(--aura-danger);  border-color: var(--aura-danger); }
+  .chip[data-flavor="signal"].active   { background: var(--aura-violet-soft);  color: var(--aura-violet);  border-color: var(--aura-violet); }
+  .chip[data-flavor="tooling"].active  { background: var(--aura-warning-soft); color: var(--aura-warning); border-color: var(--aura-warning); }
+  .chip[data-flavor="behavior"].active { background: var(--aura-info-soft);    color: var(--aura-info);    border-color: var(--aura-info); }
+  .chip[data-flavor="internal"].active { background: var(--aura-neutral-soft); color: var(--aura-text);    border-color: var(--aura-border-strong); }
+
+  .filter-reset {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--aura-text-subtle);
+    font-family: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: var(--aura-radius-s);
+  }
+  .filter-reset:hover { color: var(--aura-text-strong); background: var(--aura-surface-hover); }
+  .filter-reset:disabled { opacity: 0.4; cursor: default; }
+
+  .filter-status {
+    margin-top: var(--aura-space-s);
+    font-size: 12.5px;
+    color: var(--aura-text-faint);
+  }
+
+  /* Hidden sections / entries when filtered out */
+  .entry.is-hidden { display: none; }
+  section.is-empty { display: none; }
+
+  /* ============================================================
+     Section headers
+     ============================================================ */
+  section {
+    margin-bottom: var(--aura-space-2xl);
+    scroll-margin-top: 24px;
+  }
+  section:last-of-type { margin-bottom: 0; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--aura-space-l);
+    margin-bottom: var(--aura-space-m);
+    padding-bottom: var(--aura-space-s);
+    border-bottom: 1px solid var(--aura-border-subtle);
+  }
+  .section-num {
+    font-family: var(--aura-font-body);
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 1;
+    color: var(--aura-primary);
+    flex-shrink: 0;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    min-width: 1.6em;
+  }
+  .section-header h2 {
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin: 0;
+    flex: 1;
+    color: var(--aura-text-strong);
+  }
+  .section-tagline {
+    color: var(--aura-text-subtle);
+    font-size: 14.5px;
+    margin: 0 0 var(--aura-space-l);
+    max-width: 64ch;
+  }
+
+  /* ============================================================
+     Entry cards
+     ============================================================ */
+  .entry {
+    margin: 0 0 var(--aura-space-m);
+    padding: var(--aura-space-l) var(--aura-space-l);
+    background: var(--aura-surface-base);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-l);
+    box-shadow: var(--aura-shadow-xs);
+    position: relative;
+    transition: box-shadow .2s ease, border-color .2s ease;
+  }
+  .entry:hover {
+    box-shadow: var(--aura-shadow-s);
+    border-color: var(--aura-border);
+  }
+  .entry::before {
+    content: "";
+    position: absolute;
+    top: var(--aura-space-l); bottom: var(--aura-space-l);
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--aura-text-faint);
+    opacity: 0.4;
+  }
+  .entry.flavor-new::before      { background: var(--aura-success); opacity: 1; }
+  .entry.flavor-break::before    { background: var(--aura-danger);  opacity: 1; }
+  .entry.flavor-internal::before { background: var(--aura-text-faint); opacity: 0.5; }
+  .entry.flavor-signal::before   { background: var(--aura-violet);  opacity: 1; }
+  .entry.flavor-tooling::before  { background: var(--aura-warning); opacity: 1; }
+  .entry.flavor-behavior::before { background: var(--aura-info);    opacity: 1; }
+
+  .entry-head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--aura-space-m);
+    margin-bottom: var(--aura-space-s);
+    flex-wrap: wrap;
+  }
+  .fid {
+    font-family: var(--aura-font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: var(--aura-radius-s);
+    background: var(--aura-surface-sunken);
+    color: var(--aura-text-subtle);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .entry h3 {
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    margin: 0;
+    flex: 1;
+    min-width: 240px;
+    color: var(--aura-text-strong);
+  }
+  .entry h3 code {
+    font-size: 0.86em;
+    background: var(--aura-surface-sunken);
+    padding: 1px 6px;
+    border-radius: var(--aura-radius-s);
+    font-weight: 500;
+    font-family: var(--aura-font-mono);
+    color: var(--aura-text);
+  }
+
+  /* ============================================================
+     Pills (inside entries)
+     ============================================================ */
+  .pills {
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .pill {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: var(--aura-radius-pill);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--aura-surface-sunken);
+    color: var(--aura-text-subtle);
+    white-space: nowrap;
+  }
+  .pill.new      { background: var(--aura-success-soft); color: var(--aura-success); }
+  .pill.break    { background: var(--aura-danger-soft);  color: var(--aura-danger); }
+  .pill.internal { background: var(--aura-neutral-soft); color: var(--aura-text-subtle); }
+  .pill.signal   { background: var(--aura-violet-soft);  color: var(--aura-violet); }
+  .pill.tooling  { background: var(--aura-warning-soft); color: var(--aura-warning); }
+  .pill.behavior { background: var(--aura-info-soft);    color: var(--aura-info); }
+  .pill.config   { background: var(--aura-warning-soft); color: var(--aura-warning); }
+
+  /* ============================================================
+     Entry body
+     ============================================================ */
+  .entry p {
+    margin: 0 0 10px;
+    color: var(--aura-text);
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+  .entry p:last-child { margin-bottom: 0; }
+  .entry p strong { color: var(--aura-text-strong); font-weight: 600; }
+  .entry ul {
+    margin: var(--aura-space-s) 0 var(--aura-space-s);
+    padding-left: 22px;
+    color: var(--aura-text);
+  }
+  .entry li { margin: 4px 0; font-size: 14.5px; }
+
+  code, pre { font-family: var(--aura-font-mono); }
+  p code, li code {
+    font-size: 0.87em;
+    background: var(--aura-surface-sunken);
+    padding: 1px 5px;
+    border-radius: var(--aura-radius-s);
+    font-weight: 500;
+    color: var(--aura-text-strong);
+    white-space: nowrap;
+  }
+
+  /* ============================================================
+     PR meta row
+     ============================================================ */
+  .meta {
+    margin-top: var(--aura-space-m);
+    padding-top: var(--aura-space-s);
+    border-top: 1px dashed var(--aura-border-subtle);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 12.5px;
+  }
+  .meta .label {
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: var(--aura-text-faint);
+    margin-right: 4px;
+  }
+  .meta a {
+    font-family: var(--aura-font-mono);
+    font-size: 12px;
+    color: var(--aura-text-subtle);
+    text-decoration: none;
+    padding: 2px 8px;
+    border-radius: var(--aura-radius-s);
+    background: var(--aura-surface-sunken);
+    transition: all .15s ease;
+  }
+  .meta a:hover {
+    color: var(--aura-primary);
+    background: var(--aura-primary-soft);
+  }
+
+  /* ============================================================
+     Excluded box
+     ============================================================ */
+  .excluded {
+    margin-top: var(--aura-space-2xl);
+    padding: var(--aura-space-l) var(--aura-space-l);
+    background: var(--aura-surface-sunken);
+    border-radius: var(--aura-radius-l);
+    border: 1px solid var(--aura-border-subtle);
+  }
+  .excluded h3 {
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 0 var(--aura-space-s);
+    color: var(--aura-text-strong);
+  }
+  .excluded p { color: var(--aura-text-subtle); margin: 0 0 var(--aura-space-s); font-size: 14px; }
+  .excluded ul {
+    color: var(--aura-text-subtle);
+    margin: 0;
+    padding-left: 22px;
+    font-size: 14px;
+  }
+  .excluded li { margin: 5px 0; }
+  .excluded a { color: var(--aura-text-subtle); text-decoration: underline; }
+
+  /* ============================================================
+     Footer
+     ============================================================ */
+  footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--aura-space-l) var(--aura-space-l) var(--aura-space-2xl);
+    border-top: 1px solid var(--aura-border-subtle);
+    color: var(--aura-text-faint);
+    font-size: 13px;
+    text-align: center;
+  }
+  footer code {
+    background: var(--aura-surface-sunken);
+    padding: 1px 6px;
+    border-radius: var(--aura-radius-s);
+    font-family: var(--aura-font-mono);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== HERO ============================== -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="badge">Vaadin Flow · 25.2 release</div>
+    <h1>What's <em>new</em> in Flow 25.2</h1>
+    <p class="lede">
+      Forty-three user-facing changes across triggers, geolocation, signals, components, data binding, styling,
+      and tooling — distilled from 57 commits between <code>origin/25.1</code> and <code>HEAD</code>.
+    </p>
+    <div class="stats">
+      <div class="stat"><div class="num">43</div><div class="label">User-facing changes</div></div>
+      <div class="stat"><div class="num">7</div><div class="label">Categories</div></div>
+      <div class="stat"><div class="num">8</div><div class="label">Breaking changes</div></div>
+      <div class="stat"><div class="num">57</div><div class="label">Commits since 25.1</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================== LAYOUT ============================== -->
+<div class="layout">
+
+  <aside class="nav">
+    <div class="heading">Contents</div>
+    <ol>
+      <li><a href="#triggers">Triggers &amp; actions</a></li>
+      <li><a href="#geolocation">Geolocation</a></li>
+      <li><a href="#signals">Signals</a></li>
+      <li><a href="#components">Components &amp; events</a></li>
+      <li><a href="#data">Data binding</a></li>
+      <li><a href="#styling">Styling</a></li>
+      <li><a href="#tooling">Tooling &amp; DX</a></li>
+    </ol>
+  </aside>
+
+  <main>
+
+    <!-- ============================== FILTER BAR ============================== -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-row">
+        <span class="filter-label">Show me</span>
+        <button class="chip active" data-flavor="new"      type="button"><span class="dot"></span>New API</button>
+        <button class="chip active" data-flavor="break"    type="button"><span class="dot"></span>Breaking</button>
+        <button class="chip active" data-flavor="signal"   type="button"><span class="dot"></span>Signals</button>
+        <button class="chip active" data-flavor="tooling"  type="button"><span class="dot"></span>Tooling</button>
+        <button class="chip active" data-flavor="behavior" type="button"><span class="dot"></span>Behavior</button>
+        <button class="chip active" data-flavor="internal" type="button"><span class="dot"></span>Internal</button>
+        <button class="filter-reset" id="filterReset" type="button" disabled>Reset</button>
+      </div>
+      <div class="filter-status" id="filterStatus">Showing all 43 entries</div>
+    </div>
+
+  <!-- =============== 1. TRIGGERS =============== -->
+  <section id="triggers">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Triggers, actions &amp; composable JS</h2>
+    </div>
+    <p class="section-tagline">
+      Internal foundation for binding client-side events to client-side actions, plus the first public consumer:
+      Clipboard write.
+    </p>
+
+    <article class="entry flavor-internal">
+      <div class="entry-head">
+        <span class="fid">F1</span>
+        <h3>Trigger / action framework</h3>
+        <div class="pills"><span class="pill internal">Internal</span></div>
+      </div>
+      <p>
+        A new server-side API for binding client-side <em>triggers</em> (DOM events, signal changes, observers, timers)
+        to client-side <em>actions</em>, where each action runs inside the browser without a server round-trip unless it
+        explicitly reports back. The whole framework lives in <code>com.vaadin.flow.component.trigger.internal</code>
+        and is kept package-internal while the surface matures.
+      </p>
+      <p>
+        Sealed types: <code>Trigger</code>, <code>Action</code>, <code>Argument&lt;T&gt;</code>. Abstract bases:
+        <code>AbstractTrigger</code>, <code>AbstractAction</code>, <code>AbstractArgument</code>,
+        <code>AbstractCallbackAction</code>. Built-ins include <code>DomEventTrigger</code>, <code>ClickTrigger</code>,
+        <code>PropertyInput</code>, <code>LiteralInput</code>, <code>HandlerInput</code>,
+        <code>SetPropertyAction</code>, <code>PromiseAction</code>. Client side: per-host JSON snapshot installed via
+        <code>Element.executeJs</code> + <code>beforeClientResponse</code> coalescing, plus a
+        <code>window.Vaadin.Flow.triggers</code> registry on <code>flow-client/src/main/frontend/Triggers.ts</code>
+        for add-ons to plug in factories.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24361">#24361</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F2</span>
+        <h3>Clipboard API — write text &amp; HTML</h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        First public consumer of the trigger framework. Entry point
+        <code>Clipboard.onClick(component)</code> returns a <code>ClipboardBinding</code> exposing
+        <code>writeText(String)</code>, <code>writeText(String, JsBuilder)</code>, <code>writeText(C source)</code>
+        (HasValue source), <code>writeHtml(...)</code>, and <code>write(ClipboardContent)</code> — where
+        <code>ClipboardContent</code> is a fluent builder for mixed text + HTML payloads.
+      </p>
+      <p>
+        Actions run synchronously inside the user's click handler so the browser's user-gesture requirement for
+        <code>navigator.clipboard</code> is preserved.
+      </p>
+      <div class="meta">
+        <span class="label">PRs</span>
+        <a href="https://github.com/vaadin/flow/pull/24394">#24394</a>
+        <a href="https://github.com/vaadin/flow/pull/23615">#23615</a>
+        <a href="https://github.com/vaadin/flow/pull/24423">#24423</a>
+        <a href="https://github.com/vaadin/flow/pull/24434">#24434</a>
+      </div>
+    </article>
+
+    <article class="entry flavor-internal">
+      <div class="entry-head">
+        <span class="fid">F3</span>
+        <h3>Read-from-clipboard infrastructure</h3>
+        <div class="pills"><span class="pill internal">Internal only</span></div>
+      </div>
+      <p>
+        <code>ReadFromClipboardAction</code> lives in <code>trigger.internal</code>, plus a typed
+        <code>JsBuilder.callback</code> primitive that lets actions ship a typed payload back to the server. No
+        public-facing <code>Clipboard.read</code> entry point yet — only the infrastructure exists.
+      </p>
+      <div class="meta">
+        <span class="label">PRs</span>
+        <a href="https://github.com/vaadin/flow/pull/24397">#24397</a>
+        <a href="https://github.com/vaadin/flow/pull/24434">#24434</a>
+      </div>
+    </article>
+
+    <article class="entry flavor-internal">
+      <div class="entry-head">
+        <span class="fid">F4</span>
+        <h3>Request fullscreen — internal action</h3>
+        <div class="pills"><span class="pill internal">Internal only</span></div>
+      </div>
+      <p>
+        <code>RequestFullscreenAction</code> exists in <code>trigger.internal</code> but is not exposed via any public
+        class today. The plumbing is present, but no <code>Fullscreen.onClick(...)</code>-style facade has shipped yet.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24394">#24394</a></div>
+    </article>
+
+    <article class="entry flavor-internal">
+      <div class="entry-head">
+        <span class="fid">F5</span>
+        <h3><code>PromiseAction&lt;T&gt;</code></h3>
+        <div class="pills"><span class="pill internal">Internal</span></div>
+      </div>
+      <p>
+        Internal primitive for wrapping a JS promise so its resolved value (or rejection) can be reported back to the
+        server with a typed payload. Used by the clipboard read flow; refactored to drop adapter classes after #24397.
+      </p>
+      <div class="meta">
+        <span class="label">PRs</span>
+        <a href="https://github.com/vaadin/flow/pull/24394">#24394</a>
+        <a href="https://github.com/vaadin/flow/pull/24423">#24423</a>
+      </div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F6</span>
+        <h3><code>JsFunction</code> value type</h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New public type in <code>com.vaadin.flow.dom</code> that represents a JavaScript function expression so that
+        <code>executeJs</code> calls can compose pre-built JS fragments type-safely instead of through string
+        concatenation. Used internally to refactor several deferred operations (see F8).
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24374">#24374</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F7</span>
+        <h3><code>Element.addJsInitializer</code></h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New public method on <code>Element</code> that registers a JS snippet to run once the element is initialised on
+        the client and re-runs after detach/re-attach. Underpins the trigger framework's per-host install/teardown
+        lifecycle and is also usable on its own for any scoped client-side initialisation.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24366">#24366</a></div>
+    </article>
+
+    <article class="entry flavor-internal">
+      <div class="entry-head">
+        <span class="fid">F8</span>
+        <h3>Internal <code>JsFunction</code> migration</h3>
+        <div class="pills"><span class="pill internal">Internal refactor</span></div>
+      </div>
+      <p>
+        Refactors that adopt <code>JsFunction</code> for <code>Element</code> operations that were previously deferred
+        via raw <code>executeJs</code> strings: <code>scrollIntoView</code>, focus/blur, deferred history-state pushes,
+        window resize listener. No public API changes, but improves composability and avoids string-concatenation
+        pitfalls.
+      </p>
+      <div class="meta">
+        <span class="label">PRs</span>
+        <a href="https://github.com/vaadin/flow/pull/24379">#24379</a>
+        <a href="https://github.com/vaadin/flow/pull/24380">#24380</a>
+        <a href="https://github.com/vaadin/flow/pull/24382">#24382</a>
+        <a href="https://github.com/vaadin/flow/pull/24383">#24383</a>
+      </div>
+    </article>
+  </section>
+
+  <!-- =============== 2. GEOLOCATION =============== -->
+  <section id="geolocation">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Geolocation</h2>
+    </div>
+    <p class="section-tagline">
+      A brand-new public package — both one-shot and continuous position tracking, plus an SPI for browserless tests.
+    </p>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F9</span>
+        <h3>Geolocation API</h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New public package <code>com.vaadin.flow.component.geolocation</code> (~13 classes). After several iterations
+        the final shape is a <strong>static utility</strong> (<code>Geolocation</code>) with two flavours of usage:
+      </p>
+      <ul>
+        <li><strong>One-shot:</strong> <code>Geolocation.getPosition(owner, onSuccess, onError, [options])</code></li>
+        <li><strong>Continuous:</strong> <code>Geolocation.watchPosition(owner, [options])</code> returns a
+          <code>GeolocationWatcher</code> with <code>positionSignal()</code>, <code>activeSignal()</code>,
+          <code>addPositionListener(...)</code>, and <code>resume()</code> / <code>stop()</code>.</li>
+      </ul>
+      <p>
+        Availability hint exposed as <code>availabilityHintSignal()</code> returning
+        <code>Signal&lt;GeolocationAvailability&gt;</code> (UNKNOWN / GRANTED / DENIED / PROMPT / UNAVAILABLE).
+        Supporting types: <code>GeolocationOptions</code>, <code>GeolocationPosition</code>,
+        <code>GeolocationCoordinates</code>, <code>GeolocationResult</code> (sealed),
+        <code>GeolocationError</code>, <code>GeolocationErrorCode</code>, <code>GeolocationOutcome</code>,
+        <code>GeolocationPending</code>.
+      </p>
+      <div class="meta">
+        <span class="label">PRs</span>
+        <a href="https://github.com/vaadin/flow/pull/23527">#23527</a>
+        <a href="https://github.com/vaadin/flow/pull/24268">#24268</a>
+        <a href="https://github.com/vaadin/flow/pull/24270">#24270</a>
+        <a href="https://github.com/vaadin/flow/pull/24273">#24273</a>
+        <a href="https://github.com/vaadin/flow/pull/24276">#24276</a>
+        <a href="https://github.com/vaadin/flow/pull/24279">#24279</a>
+      </div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F10</span>
+        <h3><code>GeolocationClient</code> SPI</h3>
+        <div class="pills"><span class="pill new">New SPI</span></div>
+      </div>
+      <p>
+        A pluggable <code>GeolocationClient</code> SPI + <code>GeolocationClientFactory</code> so test drivers can
+        substitute the browser-backed <code>BrowserGeolocationClient</code>. Used by browserless-test infrastructure.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24211">#24211</a></div>
+    </article>
+  </section>
+
+  <!-- =============== 3. SIGNALS =============== -->
+  <section id="signals">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Signals on built-in types</h2>
+    </div>
+    <p class="section-tagline">
+      Twelve signal-related changes — three new built-in signals on <code>Page</code> / <code>UI</code>, two breaking
+      API tweaks, plus quality-of-life around binding, hotswap, and bulk operations.
+    </p>
+
+    <article class="entry flavor-signal">
+      <div class="entry-head">
+        <span class="fid">F11</span>
+        <h3><code>Page.pageVisibilitySignal()</code></h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        Read-only <code>Signal&lt;PageVisibility&gt;</code> on <code>Page</code> reflecting the browser tab's visibility
+        state (UNKNOWN / VISIBLE / HIDDEN). New enum <code>com.vaadin.flow.component.page.PageVisibility</code>.
+        Documented as best-effort.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23614">#23614</a></div>
+    </article>
+
+    <article class="entry flavor-signal">
+      <div class="entry-head">
+        <span class="fid">F12</span>
+        <h3><code>UI.routerStateSignal()</code></h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        Read-only <code>Signal&lt;RouterState&gt;</code> on <code>UI</code> carrying the current <code>Location</code>,
+        <code>RouteParameters</code>, and matched navigation target. New public record
+        <code>com.vaadin.flow.router.RouterState</code>. Designed to be <code>.map(...)</code>-able for location-only or
+        parameter-only subscribers.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24234">#24234</a></div>
+    </article>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F13</span>
+        <h3><code>localeSignal()</code> is read-only</h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill break">Breaking</span></div>
+      </div>
+      <p>
+        <code>VaadinSession.localeSignal()</code> and <code>UI.localeSignal()</code> now return a read-only
+        <code>Signal&lt;Locale&gt;</code> (was <code>ValueSignal&lt;Locale&gt;</code>). Callers should keep using
+        <code>setLocale(...)</code> for writes.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23828">#23828</a></div>
+    </article>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F14</span>
+        <h3>Split <code>Signal.computed</code> into cached vs direct</h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill break">Breaking</span></div>
+      </div>
+      <p>
+        <code>Signal.computed(...)</code> historically returned a memoised signal but the semantics differed depending
+        on call site. The API is now split into two explicit factories: one <strong>cached</strong> (memoises until
+        dependencies change) and one <strong>direct</strong> (recomputes on every read).
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23822">#23822</a></div>
+    </article>
+
+    <article class="entry flavor-signal">
+      <div class="entry-head">
+        <span class="fid">F15</span>
+        <h3><code>SignalBinding</code> + <code>BindingContext</code></h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        A richer return type from <code>bind(...)</code> methods that carries a <code>BindingContext</code> with the
+        bound component, signal, and a <code>Registration</code> for unbinding. Replaces ad-hoc tuples and lets binders
+        expose extension points.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23670">#23670</a></div>
+    </article>
+
+    <article class="entry flavor-behavior">
+      <div class="entry-head">
+        <span class="fid">F16</span>
+        <h3><code>setProperty</code> with signal write-callback</h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill behavior">Behavior</span></div>
+      </div>
+      <p>
+        Allows <code>Element.setProperty(...)</code> to succeed even when the property is bound to a signal, provided a
+        signal write-back callback is configured. Previously threw.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23732">#23732</a></div>
+    </article>
+
+    <article class="entry flavor-signal">
+      <div class="entry-head">
+        <span class="fid">F17</span>
+        <h3>Bulk insert on <code>ListSignal</code> / <code>SharedListSignal</code></h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New <code>addAll(...)</code> / <code>insertAll(...)</code>-style methods on <code>ListSignal</code> and
+        <code>SharedListSignal</code> for inserting a collection in one operation (single notification).
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24026">#24026</a></div>
+    </article>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F18</span>
+        <h3><code>RangeInput</code> uses <code>Signal&lt;Double&gt;</code></h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill break">Breaking</span></div>
+      </div>
+      <p>
+        <code>RangeInput</code> field API switched from <code>SharedNumberSignal</code> to the more general
+        <code>Signal&lt;Double&gt;</code>.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23866">#23866</a></div>
+    </article>
+
+    <article class="entry flavor-behavior">
+      <div class="entry-head">
+        <span class="fid">F19</span>
+        <h3><code>ElementEffect</code> runs once on creation</h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill behavior">Behavior</span></div>
+      </div>
+      <p>
+        An <code>ElementEffect</code> registered on an element now runs once synchronously when created (in addition to
+        running on dependency change), so the initial DOM state matches the signal.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23824">#23824</a></div>
+    </article>
+
+    <article class="entry flavor-behavior">
+      <div class="entry-head">
+        <span class="fid">F20</span>
+        <h3>Retain local signal values during hotswap</h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill behavior">Behavior</span></div>
+      </div>
+      <p>
+        Spring Boot hot-swap of a view class now preserves the values of local signals declared inside the view instead
+        of resetting them to defaults.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23854">#23854</a></div>
+    </article>
+
+    <article class="entry flavor-behavior">
+      <div class="entry-head">
+        <span class="fid">F21</span>
+        <h3><code>setItems</code> while active signal binding throws</h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill behavior">Behavior</span></div>
+      </div>
+      <p>
+        Calling <code>setItems(...)</code> on a data-bound component that has an active signal binding now throws a
+        clear binding exception instead of silently desyncing.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23807">#23807</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F22</span>
+        <h3><code>bindItems</code> on <code>HasDataProvider</code></h3>
+        <div class="pills"><span class="pill signal">Signal</span><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New <code>bindItems(Signal&lt;? extends Collection&lt;T&gt;&gt;)</code> overload on all
+        <code>HasDataProvider</code> components so list/grid contents can be bound to a signal.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23761">#23761</a></div>
+    </article>
+  </section>
+
+  <!-- =============== 4. COMPONENTS =============== -->
+  <section id="components">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Components &amp; events</h2>
+    </div>
+    <p class="section-tagline">
+      Two helpers on <code>ComponentEvent</code>, a typed-children interface, an inherited <code>data-testid</code>, and
+      one deprecation that simplifies the type hierarchy.
+    </p>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F23</span>
+        <h3><code>ComponentEvent.getUI()</code></h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New <code>public UI getUI()</code> on <code>ComponentEvent</code> returning the UI on which the event fired.
+        Saves callers from walking <code>source.getUI().orElse(...)</code> in event handlers.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24205">#24205</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F24</span>
+        <h3>Explicit UI in <code>ComponentEvent</code> constructor</h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        Overloaded <code>ComponentEvent</code> constructor that lets the firing code pass the firing UI explicitly (for
+        cross-UI / pushed events where the current <code>UI.getCurrent()</code> would be wrong).
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24262">#24262</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F25</span>
+        <h3><code>HasComponentsOfType&lt;T&gt;</code></h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New interface <code>com.vaadin.flow.component.HasComponentsOfType&lt;T extends Component&gt;</code> that
+        captures the typed-child contract previously baked into <code>HasComponents</code> /
+        <code>HasOrderedComponents</code>. <code>HasComponents extends HasComponentsOfType&lt;Component&gt;</code> —
+        lets a container restrict its child type (<code>HasComponentsOfType&lt;MyItem&gt;</code>).
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24186">#24186</a></div>
+    </article>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F26</span>
+        <h3><code>HasOrderedComponents</code> deprecated</h3>
+        <div class="pills"><span class="pill break">Deprecation</span></div>
+      </div>
+      <p>
+        Index-based <code>add</code>, <code>addComponentAtIndex</code>, <code>getComponentCount</code>,
+        <code>getComponentAt</code>, <code>indexOf</code> moved up to <code>HasComponents</code>.
+        <code>HasOrderedComponents</code> remains as a deprecated empty subinterface for source compatibility.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23773">#23773</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F27</span>
+        <h3><code>Component.setTestId(String)</code> / <code>getTestId()</code></h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        Convenience methods on <code>Component</code> that set/read the <code>data-testid</code> HTML attribute, so
+        browserless / Playwright tests can locate components reliably without ad-hoc id schemes.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23775">#23775</a></div>
+    </article>
+  </section>
+
+  <!-- =============== 5. DATA BINDING =============== -->
+  <section id="data">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Data binding</h2>
+    </div>
+    <p class="section-tagline">
+      Tree-data gets an interface, <code>Binder</code> stops throwing on hidden fields, and drag-and-drop can finally
+      target a specific position.
+    </p>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F28</span>
+        <h3><code>HierarchicalTreeData</code> interface extracted</h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        The previously-concrete <code>TreeData&lt;T&gt;</code> API was extracted to a
+        <code>HierarchicalTreeData&lt;T&gt;</code> interface, with <code>TreeData</code> becoming the default in-memory
+        implementation. Enables alternative tree-data sources.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23950">#23950</a></div>
+    </article>
+
+    <article class="entry flavor-behavior">
+      <div class="entry-head">
+        <span class="fid">F29</span>
+        <h3>Binder support for hidden fields</h3>
+        <div class="pills"><span class="pill behavior">Behavior</span></div>
+      </div>
+      <p>
+        <code>Binder</code> now accepts fields that are not currently visible / attached, so conditional UI flows can
+        bind ahead of time without the binder throwing.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24139">#24139</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F30</span>
+        <h3><code>StreamResource.fromInputStream(InputStream, String)</code></h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New overloaded factory that lets callers override the file-name reported to the browser
+        (<code>Content-Disposition</code>) when streaming from an <code>InputStream</code>.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24044">#24044</a></div>
+    </article>
+
+    <article class="entry flavor-new">
+      <div class="entry-head">
+        <span class="fid">F31</span>
+        <h3>Drag-and-drop to a specific location</h3>
+        <div class="pills"><span class="pill new">New API</span></div>
+      </div>
+      <p>
+        New API on the drag-and-drop module that lets a drop handler position the dropped data at an index inside the
+        drop target (between siblings) instead of just appending.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23187">#23187</a></div>
+    </article>
+  </section>
+
+  <!-- =============== 6. STYLING =============== -->
+  <section id="styling">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Styling</h2>
+    </div>
+    <p class="section-tagline">
+      One fix that resolves the long-standing non-root-context-path stylesheet problem, plus cache-busting via
+      content hash.
+    </p>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F32</span>
+        <h3><code>@StyleSheet</code> auto-applies <code>context://</code></h3>
+        <div class="pills"><span class="pill break">Breaking fix</span></div>
+      </div>
+      <p>
+        Plain <code>@StyleSheet("foo.css")</code> values are now normalised through a new
+        <code>FrontendDependencyUrlResolver.resolveToContextRoot</code>. Bare relative paths get a <code>context://</code>
+        prefix prepended; <code>http(s)://</code>, <code>//</code>, <code>context://</code>, <code>base://</code> pass
+        through; <code>/...</code> is an absolute server path; <code>./...</code> strips the leading <code>./</code>.
+        The same normalisation deduplicates spelling variants in <code>ActiveStyleSheetTracker</code>. Fixes broken
+        stylesheets when the servlet is mapped at a non-root path.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24235">#24235</a></div>
+    </article>
+
+    <article class="entry flavor-behavior">
+      <div class="entry-head">
+        <span class="fid">F33</span>
+        <h3>Content-hash cache busting for <code>@Stylesheet</code></h3>
+        <div class="pills"><span class="pill behavior">Behavior</span></div>
+      </div>
+      <p>
+        Each <code>@Stylesheet</code> URL is rewritten with a content-hash query parameter (<code>?v=&lt;hash&gt;</code>)
+        so browsers re-fetch on content change without manual cache busting.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23544">#23544</a></div>
+    </article>
+  </section>
+
+  <!-- =============== 7. TOOLING =============== -->
+  <section id="tooling">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>Build tooling &amp; developer experience</h2>
+    </div>
+    <p class="section-tagline">
+      Vite 8, incremental frontend builds, npm supply-chain hardening, a couple of breaking property/Gradle changes,
+      and small DX wins.
+    </p>
+
+    <article class="entry flavor-tooling">
+      <div class="entry-head">
+        <span class="fid">F34</span>
+        <h3>Vite 7 → Vite 8 upgrade</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span></div>
+      </div>
+      <p>
+        Upgrades the bundled Vite version. Preparatory refactors landed first: robuster bundler output handling
+        (#23927) and migration of deprecated Vite APIs (#23875).
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23893">#23893</a></div>
+    </article>
+
+    <article class="entry flavor-tooling">
+      <div class="entry-head">
+        <span class="fid">F35</span>
+        <h3>Incremental <code>buildFrontend</code></h3>
+        <div class="pills"><span class="pill tooling">Tooling</span></div>
+      </div>
+      <p>
+        The <code>buildFrontend</code> Maven/Gradle task now skips work when inputs are unchanged. Closes #17354.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/23884">#23884</a></div>
+    </article>
+
+    <article class="entry flavor-tooling">
+      <div class="entry-head">
+        <span class="fid">F36</span>
+        <h3>Delay-install for recently-published npm packages</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span><span class="pill config">New config</span></div>
+      </div>
+      <p>
+        New <code>vaadin.npm.minReleaseAgeDays</code> (and related) setting: when set, packages published within the
+        last <em>N</em> days are skipped during <code>npm install</code> (preferred over the <code>--before</code>
+        flag). Intended as a supply-chain hardening measure.
+      </p>
+      <div class="meta">
+        <span class="label">PRs</span>
+        <a href="https://github.com/vaadin/flow/pull/24334">#24334</a>
+        <a href="https://github.com/vaadin/flow/pull/24338">#24338</a>
+        <a href="https://github.com/vaadin/flow/pull/24351">#24351</a>
+      </div>
+    </article>
+
+    <article class="entry flavor-tooling">
+      <div class="entry-head">
+        <span class="fid">F37</span>
+        <h3><code>npm.excludePostinstallPackages</code> option</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span><span class="pill config">New config</span></div>
+      </div>
+      <p>
+        New configuration option that disables <code>postinstall</code> scripts for the listed npm packages during
+        dependency install.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24421">#24421</a></div>
+    </article>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F38</span>
+        <h3><code>vaadin.</code> prefix on Maven plugin property names</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span><span class="pill break">Breaking-ish</span></div>
+      </div>
+      <p>
+        All Maven plugin properties now use the <code>vaadin.</code> prefix consistently so they don't collide with
+        unrelated properties in user POMs. Existing users relying on the old names need to update.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24110">#24110</a></div>
+    </article>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F39</span>
+        <h3>Gradle: <code>vaadinPrepareFrontend</code> no longer runs in dev</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span><span class="pill break">Breaking</span></div>
+      </div>
+      <p>
+        The Gradle plugin no longer wires <code>vaadinPrepareFrontend</code> into <code>processResources</code> for
+        development builds; the dev server prepares frontend at runtime now. Restoreable with
+        <code>alwaysExecutePrepareFrontend = true</code>. Fixes IDE-triggered builds interfering with the running Vite
+        dev server.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24119">#24119</a></div>
+    </article>
+
+    <article class="entry flavor-tooling">
+      <div class="entry-head">
+        <span class="fid">F40</span>
+        <h3>Maven plugin <code>help</code> goal</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span></div>
+      </div>
+      <p>
+        <code>mvn vaadin:help</code> describes the plugin's goals and parameters.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24106">#24106</a></div>
+    </article>
+
+    <article class="entry flavor-tooling">
+      <div class="entry-head">
+        <span class="fid">F41</span>
+        <h3>Improved license error for unoptimized bundle</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span><span class="pill behavior">DX</span></div>
+      </div>
+      <p>
+        When a commercial-license check fails because the bundle is unoptimised, the error now explains the actual
+        cause instead of the cryptic license-validation message.
+      </p>
+      <div class="meta"><span class="label">PR</span><a href="https://github.com/vaadin/flow/pull/24145">#24145</a></div>
+    </article>
+
+    <article class="entry flavor-break">
+      <div class="entry-head">
+        <span class="fid">F42</span>
+        <h3><code>TypeScriptBootstrapModifier</code> SPI changes</h3>
+        <div class="pills"><span class="pill tooling">Tooling</span><span class="pill break">Breaking SPI</span></div>
+      </div>
+      <ul>
+        <li><code>Options</code> is now exposed to <code>TypeScriptBootstrapModifier</code> consumers so the modifier
+          can read application properties
+          (<a href="https://github.com/vaadin/flow/pull/24073">#24073</a>).</li>
+        <li>The <code>FrontendDependenciesScanner</code> parameter was removed from the modifier signature — modifiers
+          shouldn't depend on it
+          (<a href="https://github.com/vaadin/flow/pull/24069">#24069</a>).</li>
+      </ul>
+      <p>Add-ons implementing <code>TypeScriptBootstrapModifier</code> need to update their signatures.</p>
+    </article>
+
+    <article class="entry flavor-tooling">
+      <div class="entry-head">
+        <span class="fid">F43</span>
+        <h3>Local web components plugin in <code>vite.generated.ts</code></h3>
+        <div class="pills"><span class="pill tooling">Tooling</span></div>
+      </div>
+      <p>
+        The Vite generated config now includes a Flow-supplied plugin that helps local-web-component projects load
+        their components. Companion refactor converted <code>use-local-web-components</code> to TypeScript.
+      </p>
+      <div class="meta">
+        <span class="label">PRs</span>
+        <a href="https://github.com/vaadin/flow/pull/23793">#23793</a>
+        <a href="https://github.com/vaadin/flow/pull/23829">#23829</a>
+      </div>
+    </article>
+  </section>
+
+  <!-- =============== EXCLUDED =============== -->
+  <div class="excluded">
+    <h3>Excluded from this list</h3>
+    <p>Filtered out on purpose because they don't change anything you ship:</p>
+    <ul>
+      <li>Pure dependency bumps (<code>chore(deps): bump …</code>).</li>
+      <li>Pure test / CI hygiene — drop unused npm deps, rebalance CI shards, JUnit upgrade, fast-fail wait helpers, …</li>
+      <li>Bug fixes that don't add or change API — NPE fixes, hash differences across OSes, image-loading-when-disabled,
+        pnpm pinning, …</li>
+      <li>The internal "revert <code>JsFunction</code> usage where it doesn't help" cleanup
+        (<a href="https://github.com/vaadin/flow/pull/24393">#24393</a>), since it cancels out work in F8.</li>
+    </ul>
+  </div>
+
+  </main>
+</div>
+
+<footer>
+  Generated from <code>flow-25.2-changes.md</code> · all PR links point to <code>github.com/vaadin/flow</code>
+</footer>
+
+<script>
+(() => {
+  const chips = document.querySelectorAll('.chip[data-flavor]');
+  const reset = document.getElementById('filterReset');
+  const status = document.getElementById('filterStatus');
+  const entries = document.querySelectorAll('.entry');
+  const sections = document.querySelectorAll('main > section');
+  const total = entries.length;
+
+  const apply = () => {
+    const active = new Set(
+      Array.from(chips).filter(c => c.classList.contains('active')).map(c => c.dataset.flavor)
+    );
+    // "Show all" when every chip is active OR none are — both communicate "no filter".
+    const showAll = active.size === 0 || active.size === chips.length;
+    let shown = 0;
+
+    entries.forEach(entry => {
+      const flavor = Array.from(entry.classList).find(c => c.startsWith('flavor-'));
+      const key = flavor ? flavor.replace('flavor-', '') : '';
+      const visible = showAll || active.has(key);
+      entry.classList.toggle('is-hidden', !visible);
+      if (visible) shown++;
+    });
+
+    sections.forEach(section => {
+      const visibleEntries = section.querySelectorAll('.entry:not(.is-hidden)');
+      section.classList.toggle('is-empty', visibleEntries.length === 0);
+    });
+
+    reset.disabled = showAll;
+
+    if (showAll) {
+      status.textContent = `Showing all ${total} entries`;
+    } else {
+      const labels = Array.from(active)
+        .map(k => chips[Array.from(chips).findIndex(c => c.dataset.flavor === k)].textContent.trim())
+        .join(' · ');
+      status.textContent = `Showing ${shown} of ${total} · filtered to ${labels}`;
+    }
+  };
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('active');
+      apply();
+    });
+  });
+
+  // Reset restores the default state: every chip active.
+  reset.addEventListener('click', () => {
+    chips.forEach(c => c.classList.add('active'));
+    apply();
+  });
+
+  apply();
+})();
+</script>
+
+</body>
+</html>
