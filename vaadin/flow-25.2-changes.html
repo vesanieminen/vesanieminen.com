@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow 25.2 — user-facing changes</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a22;
+    --panel-2: #1c2230;
+    --border: #2a3142;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --accent: #4a9eff;
+    --accent-soft: #1f3a5f;
+    --green: #3ecf8e;
+    --amber: #f5b54a;
+    --red: #ef5b6b;
+    --purple: #a78bfa;
+    --code-bg: #0b0d12;
+    --tag-bg: #232a3a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --panel-2: #f1f3f7;
+      --border: #d9dee7;
+      --text: #1a1f2c;
+      --muted: #5b6478;
+      --accent: #0c66e4;
+      --accent-soft: #dbeafe;
+      --green: #138a4f;
+      --amber: #b06a00;
+      --red: #c0392b;
+      --purple: #7c3aed;
+      --code-bg: #f0f2f6;
+      --tag-bg: #eef1f6;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 15.5px;
+  }
+  .wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+  header .eyebrow {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 30px;
+    line-height: 1.2;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  header .sub {
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  h2 {
+    font-size: 22px;
+    margin: 48px 0 8px;
+    letter-spacing: -0.005em;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .num {
+    color: var(--muted);
+    font-weight: 500;
+    margin-right: 10px;
+  }
+  h3 {
+    font-size: 16.5px;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  p { margin: 0 0 10px; }
+  ul { padding-left: 22px; margin: 0 0 10px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .toc {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 22px;
+    margin-bottom: 32px;
+    font-size: 14.5px;
+  }
+  .toc h2 {
+    font-size: 13.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin: 0 0 6px;
+    border: 0;
+    padding: 0;
+  }
+  .toc ol {
+    margin: 6px 0 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 28px;
+  }
+  .toc li { margin: 2px 0; break-inside: avoid; }
+
+  .feature {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    border-left: 3px solid var(--border);
+  }
+  .feature.api      { border-left-color: var(--green); }
+  .feature.breaking { border-left-color: var(--red); }
+  .feature.internal { border-left-color: var(--muted); }
+  .feature.tooling  { border-left-color: var(--amber); }
+  .feature.signal   { border-left-color: var(--purple); }
+
+  .feature-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .fid {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .ftitle { font-weight: 600; font-size: 16px; flex: 1; min-width: 220px; }
+
+  .tags { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10.5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--tag-bg);
+    color: var(--muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .tag.new-api   { background: rgba(62,207,142,0.12);  color: var(--green); }
+  .tag.breaking  { background: rgba(239,91,107,0.14);  color: var(--red); }
+  .tag.internal  { background: rgba(152,162,179,0.18); color: var(--muted); }
+  .tag.tooling   { background: rgba(245,181,74,0.16);  color: var(--amber); }
+  .tag.signal    { background: rgba(167,139,250,0.16); color: var(--purple); }
+  .tag.behavior  { background: rgba(74,158,255,0.14);  color: var(--accent); }
+
+  code, pre {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    margin: 8px 0 12px;
+    line-height: 1.5;
+  }
+  pre code { background: transparent; border: 0; padding: 0; }
+
+  .meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .meta strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .meta .label {
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    margin-right: 6px;
+  }
+
+  .pr-list a {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+
+  .excluded {
+    background: var(--panel-2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 16px 22px;
+    margin-top: 32px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .excluded h2 {
+    margin: 0 0 8px;
+    border: 0;
+    padding: 0;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 0 0 28px;
+    padding: 12px 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--muted);
+    align-items: center;
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 4px;
+    height: 14px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: -2px;
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Vaadin Flow 25.2 · Release digest</div>
+  <h1>Flow 25.2 — user-facing changes</h1>
+  <p class="sub">
+    Source: <code>git log origin/25.1..HEAD</code> — 57 commits with <code>feat:</code> / <code>refactor:</code>
+    markers. Pure <code>chore:</code> / <code>test:</code> / <code>ci:</code> / non-API <code>fix:</code> commits are excluded
+    unless they introduced API. Each entry has an ID (used by <code>result.md</code>), one paragraph of description,
+    the main entry-point classes / methods, and the originating PRs.
+  </p>
+</header>
+
+<div class="legend">
+  <span><span class="swatch" style="background:var(--green)"></span>New public API</span>
+  <span><span class="swatch" style="background:var(--red)"></span>Breaking</span>
+  <span><span class="swatch" style="background:var(--purple)"></span>Signal-related</span>
+  <span><span class="swatch" style="background:var(--amber)"></span>Build / tooling</span>
+  <span><span class="swatch" style="background:var(--muted)"></span>Internal foundation</span>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#triggers">Triggers, actions, composable JS</a></li>
+    <li><a href="#geolocation">Geolocation</a></li>
+    <li><a href="#signals">Signals on built-in types</a></li>
+    <li><a href="#components">Component / event API</a></li>
+    <li><a href="#data">Data binding</a></li>
+    <li><a href="#styling">Styling</a></li>
+    <li><a href="#tooling">Build tooling &amp; developer experience</a></li>
+    <li><a href="#excluded">Excluded from this list</a></li>
+  </ol>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="triggers"><span class="num">1.</span>Triggers, actions and composable JS</h2>
+<p>Internal foundation plus the first public consumer: <strong>Clipboard write</strong>. The trigger framework
+itself stays package-internal in 25.2 while the surface matures.</p>
+
+<div class="feature internal">
+  <div class="feature-head">
+    <span class="fid">F1</span>
+    <h3 class="ftitle">Trigger / action framework</h3>
+    <span class="tags"><span class="tag internal">Internal</span></span>
+  </div>
+  <p>
+    A new server-side API for binding client-side <em>triggers</em> (DOM events, signal changes, observers, timers, …)
+    to client-side <em>actions</em>, where each action runs inside the browser without a server round-trip unless it
+    explicitly reports back. The whole framework lives in <code>com.vaadin.flow.component.trigger.internal</code> and is
+    kept package-internal while the surface matures.
+  </p>
+  <p>
+    Sealed types: <code>Trigger</code>, <code>Action</code>, <code>Argument&lt;T&gt;</code>. Abstract bases:
+    <code>AbstractTrigger</code>, <code>AbstractAction</code>, <code>AbstractArgument</code>,
+    <code>AbstractCallbackAction</code>. Built-ins include <code>DomEventTrigger</code>, <code>ClickTrigger</code>,
+    <code>PropertyInput</code>, <code>LiteralInput</code>, <code>HandlerInput</code>,
+    <code>SetPropertyAction</code>, <code>PromiseAction</code>. Client side: per-host JSON snapshot installed via
+    <code>Element.executeJs</code> + <code>beforeClientResponse</code> coalescing, plus a
+    <code>window.Vaadin.Flow.triggers</code> registry on <code>flow-client/src/main/frontend/Triggers.ts</code>
+    for add-ons to plug in factories.
+  </p>
+  <div class="meta pr-list"><span class="label">PRs</span> <a href="https://github.com/vaadin/flow/pull/24361">#24361</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F2</span>
+    <h3 class="ftitle">Clipboard API (write text / HTML)</h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    First public consumer of the trigger framework. Entry point
+    <code>com.vaadin.flow.component.clipboard.Clipboard.onClick(component)</code> returns a <code>ClipboardBinding</code>
+    exposing <code>writeText(String)</code>, <code>writeText(String, JsBuilder)</code>,
+    <code>writeText(C source)</code> (HasValue source), <code>writeHtml(...)</code>, and
+    <code>write(ClipboardContent)</code> — where <code>ClipboardContent</code> is a fluent builder for mixed text + HTML
+    payloads. Actions run synchronously inside the user's click handler so the browser's user-gesture requirement for
+    <code>navigator.clipboard</code> is preserved.
+  </p>
+  <div class="meta">
+    <div><span class="label">Entry</span> <code>Clipboard.onClick(component)</code></div>
+  </div>
+  <div class="meta pr-list">
+    <span class="label">PRs</span>
+    <a href="https://github.com/vaadin/flow/pull/24394">#24394</a>
+    <a href="https://github.com/vaadin/flow/pull/23615">#23615</a>
+    <a href="https://github.com/vaadin/flow/pull/24423">#24423</a>
+    <a href="https://github.com/vaadin/flow/pull/24434">#24434</a>
+  </div>
+</div>
+
+<div class="feature internal">
+  <div class="feature-head">
+    <span class="fid">F3</span>
+    <h3 class="ftitle">Read-from-clipboard</h3>
+    <span class="tags"><span class="tag internal">Internal only</span></span>
+  </div>
+  <p>
+    <code>ReadFromClipboardAction</code> (still internal in <code>trigger.internal</code>) plus a typed
+    <code>JsBuilder.callback</code> primitive that lets actions ship a typed payload back to the server. Currently no
+    public-facing <code>Clipboard.read</code> entry point — only the infrastructure exists.
+  </p>
+  <div class="meta pr-list"><span class="label">PRs</span>
+    <a href="https://github.com/vaadin/flow/pull/24397">#24397</a>
+    <a href="https://github.com/vaadin/flow/pull/24434">#24434</a>
+  </div>
+</div>
+
+<div class="feature internal">
+  <div class="feature-head">
+    <span class="fid">F4</span>
+    <h3 class="ftitle">Request fullscreen (internal action)</h3>
+    <span class="tags"><span class="tag internal">Internal only</span></span>
+  </div>
+  <p>
+    <code>RequestFullscreenAction</code> exists in <code>trigger.internal</code> but is not exposed via any public
+    class today; the action plumbing is present but no <code>Fullscreen.onClick(...)</code>-style facade has shipped yet.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24394">#24394</a></div>
+</div>
+
+<div class="feature internal">
+  <div class="feature-head">
+    <span class="fid">F5</span>
+    <h3 class="ftitle"><code>PromiseAction&lt;T&gt;</code></h3>
+    <span class="tags"><span class="tag internal">Internal</span></span>
+  </div>
+  <p>
+    Internal primitive for wrapping a JS promise so its resolved value (or rejection) can be reported back to the
+    server with a typed payload. Used by the clipboard read flow; refactored to drop adapter classes after #24397.
+  </p>
+  <div class="meta pr-list"><span class="label">PRs</span>
+    <a href="https://github.com/vaadin/flow/pull/24394">#24394</a>
+    <a href="https://github.com/vaadin/flow/pull/24423">#24423</a>
+  </div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F6</span>
+    <h3 class="ftitle"><code>JsFunction</code> value type</h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New public type in <code>com.vaadin.flow.dom</code> that represents a JavaScript function expression so that
+    <code>executeJs</code> calls can compose pre-built JS fragments type-safely instead of through string
+    concatenation. Used internally to refactor several deferred operations (see F8).
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24374">#24374</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F7</span>
+    <h3 class="ftitle"><code>Element.addJsInitializer</code></h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New public method on <code>Element</code> that registers a JS snippet to run once the element is initialised on
+    the client and re-runs after detach/re-attach. Underpins the trigger framework's per-host install/teardown
+    lifecycle and is also usable on its own for any scoped client-side initialisation.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24366">#24366</a></div>
+</div>
+
+<div class="feature internal">
+  <div class="feature-head">
+    <span class="fid">F8</span>
+    <h3 class="ftitle">Internal <code>JsFunction</code> migration</h3>
+    <span class="tags"><span class="tag internal">Internal refactor</span></span>
+  </div>
+  <p>
+    Refactors that adopt <code>JsFunction</code> for <code>Element</code> operations that were previously deferred
+    via raw <code>executeJs</code> strings: <code>scrollIntoView</code>, focus/blur, deferred history-state pushes,
+    window resize listener. No public API changes, but improves composability and avoids string-concatenation pitfalls.
+  </p>
+  <div class="meta pr-list"><span class="label">PRs</span>
+    <a href="https://github.com/vaadin/flow/pull/24379">#24379</a>
+    <a href="https://github.com/vaadin/flow/pull/24380">#24380</a>
+    <a href="https://github.com/vaadin/flow/pull/24382">#24382</a>
+    <a href="https://github.com/vaadin/flow/pull/24383">#24383</a>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="geolocation"><span class="num">2.</span>Geolocation</h2>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F9</span>
+    <h3 class="ftitle">Geolocation API</h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New public package <code>com.vaadin.flow.component.geolocation</code> (~13 classes). After several iterations the
+    final shape is a <strong>static utility</strong> (<code>Geolocation</code>) with two flavours of usage:
+  </p>
+  <ul>
+    <li><strong>One-shot</strong>: <code>Geolocation.getPosition(owner, onSuccess, onError, [options])</code></li>
+    <li><strong>Continuous</strong>: <code>Geolocation.watchPosition(owner, [options])</code> returns a
+      <code>GeolocationWatcher</code> carrying <code>positionSignal()</code>, <code>activeSignal()</code>,
+      <code>addPositionListener(...)</code>, and <code>resume()</code> / <code>stop()</code> controls.</li>
+  </ul>
+  <p>
+    Availability hint exposed as <code>availabilityHintSignal()</code> returning
+    <code>Signal&lt;GeolocationAvailability&gt;</code> (UNKNOWN / GRANTED / DENIED / PROMPT / UNAVAILABLE).
+    Supporting records / enums: <code>GeolocationOptions</code> (builder),
+    <code>GeolocationPosition</code>, <code>GeolocationCoordinates</code>,
+    <code>GeolocationResult</code> (sealed: <code>GeolocationPosition</code> or <code>GeolocationError</code>),
+    <code>GeolocationError</code>, <code>GeolocationErrorCode</code>, <code>GeolocationOutcome</code>,
+    <code>GeolocationPending</code>.
+  </p>
+  <div class="meta pr-list"><span class="label">PRs</span>
+    <a href="https://github.com/vaadin/flow/pull/23527">#23527</a>
+    <a href="https://github.com/vaadin/flow/pull/24268">#24268</a>
+    <a href="https://github.com/vaadin/flow/pull/24270">#24270</a>
+    <a href="https://github.com/vaadin/flow/pull/24273">#24273</a>
+    <a href="https://github.com/vaadin/flow/pull/24276">#24276</a>
+    <a href="https://github.com/vaadin/flow/pull/24279">#24279</a>
+  </div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F10</span>
+    <h3 class="ftitle"><code>GeolocationClient</code> port</h3>
+    <span class="tags"><span class="tag new-api">New SPI</span></span>
+  </div>
+  <p>
+    A pluggable <code>GeolocationClient</code> SPI + <code>GeolocationClientFactory</code> so test drivers can substitute
+    the browser-backed <code>BrowserGeolocationClient</code>. Used by browserless-test infrastructure.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24211">#24211</a></div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="signals"><span class="num">3.</span>Signals on built-in types</h2>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F11</span>
+    <h3 class="ftitle"><code>Page.pageVisibilitySignal()</code></h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    Read-only <code>Signal&lt;PageVisibility&gt;</code> on <code>Page</code> reflecting the browser tab's visibility
+    state (UNKNOWN / VISIBLE / HIDDEN). New enum <code>com.vaadin.flow.component.page.PageVisibility</code>.
+    Documented as best-effort.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23614">#23614</a></div>
+</div>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F12</span>
+    <h3 class="ftitle"><code>UI.routerStateSignal()</code></h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    Read-only <code>Signal&lt;RouterState&gt;</code> on <code>UI</code> carrying the current <code>Location</code>,
+    <code>RouteParameters</code>, and matched navigation target. New public record
+    <code>com.vaadin.flow.router.RouterState</code>. Designed to be <code>.map(...)</code>-able for location-only or
+    parameter-only subscribers.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24234">#24234</a></div>
+</div>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F13</span>
+    <h3 class="ftitle"><code>localeSignal()</code> read-only</h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag breaking">Breaking</span></span>
+  </div>
+  <p>
+    <code>VaadinSession.localeSignal()</code> and <code>UI.localeSignal()</code> now return a read-only
+    <code>Signal&lt;Locale&gt;</code> (was <code>ValueSignal&lt;Locale&gt;</code>). Callers should keep using
+    <code>setLocale(...)</code> for writes.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23828">#23828</a></div>
+</div>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F14</span>
+    <h3 class="ftitle">Split <code>computed</code> into cached vs direct</h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag breaking">Breaking</span></span>
+  </div>
+  <p>
+    <code>Signal.computed(...)</code> historically returned a memoised signal but the semantics differed depending on
+    call site. The API is now split into two explicit factories: one <strong>cached</strong> (memoises until
+    dependencies change) and one <strong>direct</strong> (recomputes on every read).
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23822">#23822</a></div>
+</div>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F15</span>
+    <h3 class="ftitle"><code>SignalBinding</code> + <code>BindingContext</code></h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    A richer return type from <code>bind(...)</code> methods that carries a <code>BindingContext</code> with the bound
+    component, signal, and a <code>Registration</code> for unbinding. Replaces ad-hoc tuples and lets binders expose
+    extension points.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23670">#23670</a></div>
+</div>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F16</span>
+    <h3 class="ftitle"><code>setProperty</code> with signal write callback</h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag behavior">Behavior</span></span>
+  </div>
+  <p>
+    Allows <code>Element.setProperty(...)</code> to succeed even when the property is bound to a signal, provided a
+    signal write-back callback is configured. Previously threw.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23732">#23732</a></div>
+</div>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F17</span>
+    <h3 class="ftitle">Bulk insert on <code>ListSignal</code> / <code>SharedListSignal</code></h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New <code>addAll(...)</code> / <code>insertAll(...)</code> style methods on <code>ListSignal</code> and
+    <code>SharedListSignal</code> for inserting a collection in one operation (single notification).
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24026">#24026</a></div>
+</div>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F18</span>
+    <h3 class="ftitle"><code>RangeInput</code> uses <code>Signal&lt;Double&gt;</code></h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag breaking">Breaking</span></span>
+  </div>
+  <p>
+    <code>RangeInput</code> field API switched from <code>SharedNumberSignal</code> to the more general
+    <code>Signal&lt;Double&gt;</code>.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23866">#23866</a></div>
+</div>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F19</span>
+    <h3 class="ftitle"><code>ElementEffect</code> runs once on creation</h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag behavior">Behavior change</span></span>
+  </div>
+  <p>
+    Behavioural change: an <code>ElementEffect</code> registered on an element now runs once synchronously when created
+    (in addition to running on dependency change), so the initial DOM state matches the signal.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23824">#23824</a></div>
+</div>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F20</span>
+    <h3 class="ftitle">Retain local signal values during hotswap</h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag behavior">Behavior</span></span>
+  </div>
+  <p>
+    Spring Boot hot-swap of a view class now preserves the values of local signals declared inside the view instead of
+    resetting them to defaults.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23854">#23854</a></div>
+</div>
+
+<div class="feature signal">
+  <div class="feature-head">
+    <span class="fid">F21</span>
+    <h3 class="ftitle"><code>setItems</code> while active signal binding throws</h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag behavior">Behavior</span></span>
+  </div>
+  <p>
+    Calling <code>setItems(...)</code> on a data-bound component that has an active signal binding now throws a clear
+    binding exception instead of silently desyncing.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23807">#23807</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F22</span>
+    <h3 class="ftitle"><code>bindItems</code> on <code>HasDataProvider</code></h3>
+    <span class="tags"><span class="tag signal">Signal</span><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New <code>bindItems(Signal&lt;? extends Collection&lt;T&gt;&gt;)</code> overload on all
+    <code>HasDataProvider</code> components so list/grid contents can be bound to a signal.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23761">#23761</a></div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="components"><span class="num">4.</span>Component / event API</h2>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F23</span>
+    <h3 class="ftitle"><code>ComponentEvent.getUI()</code></h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New <code>public UI getUI()</code> on <code>ComponentEvent</code> returning the UI on which the event fired.
+    Saves callers from walking <code>source.getUI().orElse(...)</code> in event handlers.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24205">#24205</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F24</span>
+    <h3 class="ftitle">Explicit UI in <code>ComponentEvent</code> constructor</h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    Overloaded <code>ComponentEvent</code> constructor that lets the firing code pass the firing UI explicitly (for
+    cross-UI / pushed events where the current <code>UI.getCurrent()</code> would be wrong).
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24262">#24262</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F25</span>
+    <h3 class="ftitle"><code>HasComponentsOfType&lt;T&gt;</code></h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New interface <code>com.vaadin.flow.component.HasComponentsOfType&lt;T extends Component&gt;</code> that captures
+    the typed-child contract previously baked into <code>HasComponents</code> / <code>HasOrderedComponents</code>.
+    <code>HasComponents extends HasComponentsOfType&lt;Component&gt;</code>. Lets a container restrict its child type
+    (<code>HasComponentsOfType&lt;MyItem&gt;</code>).
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24186">#24186</a></div>
+</div>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F26</span>
+    <h3 class="ftitle"><code>HasOrderedComponents</code> deprecated, methods folded into <code>HasComponents</code></h3>
+    <span class="tags"><span class="tag breaking">Deprecation</span></span>
+  </div>
+  <p>
+    Index-based <code>add</code>, <code>addComponentAtIndex</code>, <code>getComponentCount</code>,
+    <code>getComponentAt</code>, <code>indexOf</code> moved up to <code>HasComponents</code>.
+    <code>HasOrderedComponents</code> remains as a deprecated empty subinterface for source compatibility.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23773">#23773</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F27</span>
+    <h3 class="ftitle"><code>Component.setTestId(String)</code> / <code>getTestId()</code></h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    Convenience methods on <code>Component</code> that set/read the <code>data-testid</code> HTML attribute, so
+    browserless / Playwright tests can locate components reliably without ad-hoc id schemes.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23775">#23775</a></div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="data"><span class="num">5.</span>Data binding</h2>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F28</span>
+    <h3 class="ftitle"><code>HierarchicalTreeData</code> interface extracted</h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    The previously-concrete <code>TreeData&lt;T&gt;</code> API was extracted to a
+    <code>HierarchicalTreeData&lt;T&gt;</code> interface, with <code>TreeData</code> becoming the default in-memory
+    implementation. Enables alternative tree-data sources.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23950">#23950</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F29</span>
+    <h3 class="ftitle">Binder support for hidden fields</h3>
+    <span class="tags"><span class="tag behavior">Behavior</span></span>
+  </div>
+  <p>
+    <code>Binder</code> now accepts fields that are not currently visible / attached, so conditional UI flows can bind
+    ahead of time without the binder throwing.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24139">#24139</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F30</span>
+    <h3 class="ftitle"><code>StreamResource.fromInputStream(InputStream, String)</code></h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New overloaded factory that lets callers override the file-name reported to the browser
+    (<code>Content-Disposition</code>) when streaming from an <code>InputStream</code>.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24044">#24044</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F31</span>
+    <h3 class="ftitle">Drag-and-drop to a specific location</h3>
+    <span class="tags"><span class="tag new-api">New public API</span></span>
+  </div>
+  <p>
+    New API on the drag-and-drop module that lets a drop handler position the dropped data at an index inside the drop
+    target (between siblings) instead of just appending.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23187">#23187</a></div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="styling"><span class="num">6.</span>Styling</h2>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F32</span>
+    <h3 class="ftitle"><code>@StyleSheet</code> auto-applies <code>context://</code></h3>
+    <span class="tags"><span class="tag breaking">Breaking fix</span></span>
+  </div>
+  <p>
+    Plain <code>@StyleSheet("foo.css")</code> values are now normalised through a new
+    <code>FrontendDependencyUrlResolver.resolveToContextRoot</code>. Bare relative paths get a <code>context://</code>
+    prefix prepended; <code>http(s)://</code>, <code>//</code>, <code>context://</code>, <code>base://</code> pass
+    through; <code>/...</code> is an absolute server path; <code>./...</code> strips the leading <code>./</code>. The
+    same normalisation deduplicates spelling variants in <code>ActiveStyleSheetTracker</code>. Fixes broken stylesheets
+    when the servlet is mapped at a non-root path.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24235">#24235</a></div>
+</div>
+
+<div class="feature api">
+  <div class="feature-head">
+    <span class="fid">F33</span>
+    <h3 class="ftitle">Content-hash cache busting for <code>@Stylesheet</code></h3>
+    <span class="tags"><span class="tag behavior">Behavior</span></span>
+  </div>
+  <p>
+    Each <code>@Stylesheet</code> URL is rewritten with a content-hash query parameter (<code>?v=&lt;hash&gt;</code>) so
+    browsers re-fetch on content change without manual cache busting.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23544">#23544</a></div>
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="tooling"><span class="num">7.</span>Build tooling and developer experience</h2>
+
+<div class="feature tooling">
+  <div class="feature-head">
+    <span class="fid">F34</span>
+    <h3 class="ftitle">Vite 7 → Vite 8 upgrade</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span></span>
+  </div>
+  <p>
+    Upgrades the bundled Vite version. Preparatory refactors landed first: robuster bundler output handling
+    (#23927) and migration of deprecated Vite APIs (#23875).
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23893">#23893</a></div>
+</div>
+
+<div class="feature tooling">
+  <div class="feature-head">
+    <span class="fid">F35</span>
+    <h3 class="ftitle">Incremental <code>buildFrontend</code></h3>
+    <span class="tags"><span class="tag tooling">Tooling</span></span>
+  </div>
+  <p>
+    The <code>buildFrontend</code> Maven/Gradle task now skips work when inputs are unchanged. Closes #17354.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/23884">#23884</a></div>
+</div>
+
+<div class="feature tooling">
+  <div class="feature-head">
+    <span class="fid">F36</span>
+    <h3 class="ftitle">Delay-install for recently-published npm packages</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span><span class="tag new-api">New config</span></span>
+  </div>
+  <p>
+    New <code>vaadin.npm.minReleaseAgeDays</code> (and related) setting: when set, packages published within the last
+    <em>N</em> days are skipped during <code>npm install</code> (preferred over the <code>--before</code> flag).
+    Intended as a supply-chain hardening measure.
+  </p>
+  <div class="meta pr-list"><span class="label">PRs</span>
+    <a href="https://github.com/vaadin/flow/pull/24334">#24334</a>
+    <a href="https://github.com/vaadin/flow/pull/24338">#24338</a>
+    <a href="https://github.com/vaadin/flow/pull/24351">#24351</a>
+  </div>
+</div>
+
+<div class="feature tooling">
+  <div class="feature-head">
+    <span class="fid">F37</span>
+    <h3 class="ftitle"><code>npm.excludePostinstallPackages</code> option</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span><span class="tag new-api">New config</span></span>
+  </div>
+  <p>
+    New configuration option that disables <code>postinstall</code> scripts for the listed npm packages during
+    dependency install.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24421">#24421</a></div>
+</div>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F38</span>
+    <h3 class="ftitle"><code>vaadin.</code> prefix on Maven plugin property names</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span><span class="tag breaking">Breaking-ish</span></span>
+  </div>
+  <p>
+    All Maven plugin properties now use the <code>vaadin.</code> prefix consistently so they don't collide with
+    unrelated properties in user POMs. Existing users relying on the old names need to update.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24110">#24110</a></div>
+</div>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F39</span>
+    <h3 class="ftitle">Gradle: <code>vaadinPrepareFrontend</code> no longer runs in dev</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span><span class="tag breaking">Breaking</span></span>
+  </div>
+  <p>
+    The Gradle plugin no longer wires <code>vaadinPrepareFrontend</code> into <code>processResources</code> for
+    development builds; the dev server prepares frontend at runtime now. Restoreable with
+    <code>alwaysExecutePrepareFrontend = true</code>. Fixes IDE-triggered builds interfering with the running Vite
+    dev server.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24119">#24119</a></div>
+</div>
+
+<div class="feature tooling">
+  <div class="feature-head">
+    <span class="fid">F40</span>
+    <h3 class="ftitle">Maven plugin <code>help</code> goal</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span></span>
+  </div>
+  <p>
+    <code>mvn vaadin:help</code> describes the plugin's goals and parameters.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24106">#24106</a></div>
+</div>
+
+<div class="feature tooling">
+  <div class="feature-head">
+    <span class="fid">F41</span>
+    <h3 class="ftitle">Improved license error for unoptimized bundle</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span><span class="tag behavior">DX</span></span>
+  </div>
+  <p>
+    When a commercial-license check fails because the bundle is unoptimised, the error now explains the actual cause
+    instead of the cryptic license-validation message.
+  </p>
+  <div class="meta pr-list"><span class="label">PR</span> <a href="https://github.com/vaadin/flow/pull/24145">#24145</a></div>
+</div>
+
+<div class="feature breaking">
+  <div class="feature-head">
+    <span class="fid">F42</span>
+    <h3 class="ftitle"><code>TypeScriptBootstrapModifier</code> SPI changes</h3>
+    <span class="tags"><span class="tag tooling">Tooling</span><span class="tag breaking">Breaking SPI</span></span>
+  </div>
+  <ul>
+    <li><code>Options</code> is now exposed to <code>TypeScriptBootstrapModifier</code> consumers so the modifier can
+      read application properties (<a href="https://github.com/vaadin/flow/pull/24073">#24073</a>).</li>
+    <li>The <code>FrontendDependenciesScanner</code> parameter was removed from the modifier signature — modifiers
+      shouldn't depend on it (<a href="https://github.com/vaadin/flow/pull/24069">#24069</a>).</li>
+  </ul>
+  <p>Add-ons implementing <code>TypeScriptBootstrapModifier</code> need to update their signatures.</p>
+</div>
+
+<div class="feature tooling">
+  <div class="feature-head">
+    <span class="fid">F43</span>
+    <h3 class="ftitle">Local web components plugin in <code>vite.generated.ts</code></h3>
+    <span class="tags"><span class="tag tooling">Tooling</span></span>
+  </div>
+  <p>
+    The Vite generated config now includes a Flow-supplied plugin that helps local-web-component projects load their
+    components. Companion refactor converted <code>use-local-web-components</code> to TypeScript.
+  </p>
+  <div class="meta pr-list"><span class="label">PRs</span>
+    <a href="https://github.com/vaadin/flow/pull/23793">#23793</a>
+    <a href="https://github.com/vaadin/flow/pull/23829">#23829</a>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<div class="excluded" id="excluded">
+  <h2>Excluded from this list (intentionally)</h2>
+  <ul>
+    <li>Pure dependency bumps (<code>chore(deps): bump …</code>).</li>
+    <li>Pure test/CI hygiene (drop unused npm deps, rebalance CI shards, JUnit upgrade, fast-fail wait helpers, …).</li>
+    <li>Bug fixes that don't add or change API (NPE fixes, hash differences across OSes, image-loading-when-disabled,
+      pnpm pinning, …).</li>
+    <li>The internal "revert <code>JsFunction</code> usage where it doesn't help" cleanup
+      (<a href="https://github.com/vaadin/flow/pull/24393">#24393</a>), since it cancels out work in F8.</li>
+  </ul>
+</div>
+
+<footer>
+  Generated from <code>flow-25.2-changes.md</code>. Linked PRs go to <code>github.com/vaadin/flow</code>.
+</footer>
+
+</div>
+</body>
+</html>
