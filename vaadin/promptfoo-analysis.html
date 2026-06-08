@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Does promptfoo fit agentic-dx-improvement? — Analysis</title>
+<style>
+  :root {
+    --fg: #1f2328;
+    --muted: #57606a;
+    --bg: #ffffff;
+    --accent: #0969da;
+    --code-bg: #f6f8fa;
+    --border: #d0d7de;
+    --callout: #fff8c5;
+    --callout-border: #d4a72c;
+    --good-bg: #dafbe1;
+    --good-fg: #1a7f37;
+    --bad-bg: #ffebe9;
+    --bad-fg: #cf222e;
+    --warn-bg: #fff1e5;
+    --warn-fg: #bc4c00;
+    --rec-bg: #ddf4ff;
+    --rec-border: #54aeff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    margin: 0;
+    line-height: 1.55;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 880px);
+    gap: 2.5rem;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 5rem;
+  }
+  /* Sidebar TOC */
+  nav.toc {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    font-size: 0.85rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+  }
+  nav.toc .toc-title {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  nav.toc a {
+    display: block;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.22rem 0.5rem;
+    border-left: 2px solid transparent;
+    border-radius: 0 4px 4px 0;
+  }
+  nav.toc a:hover { color: var(--accent); background: var(--code-bg); }
+  nav.toc a.sub { padding-left: 1.25rem; font-size: 0.8rem; }
+
+  main { min-width: 0; }
+  h1 { font-size: 2rem; margin: 0 0 0.25rem; line-height: 1.2; }
+  .subtitle { color: var(--muted); font-size: 1.05rem; margin: 0 0 0.5rem; }
+  .meta { color: var(--muted); font-size: 0.82rem; margin-bottom: 2rem; }
+  h2 {
+    margin-top: 2.75rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.45rem;
+    scroll-margin-top: 1rem;
+  }
+  h3 { margin-top: 1.9rem; font-size: 1.12rem; }
+  p, li { font-size: 0.97rem; }
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: 0.3rem 0; }
+  a { color: var(--accent); }
+
+  code {
+    background: var(--code-bg);
+    padding: 0.12em 0.4em;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.86em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.83rem;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  /* Callouts */
+  .callout {
+    border: 1px solid var(--callout-border);
+    background: var(--callout);
+    border-left-width: 5px;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+  }
+  .callout.verdict { background: var(--rec-bg); border-color: var(--rec-border); }
+  .callout.danger  { background: var(--bad-bg);  border-color: var(--bad-fg); }
+  .callout h3, .callout h4 { margin-top: 0; }
+  .callout p:last-child, .callout ul:last-child { margin-bottom: 0; }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.good { background: var(--good-bg); color: var(--good-fg); }
+  .badge.bad  { background: var(--bad-bg);  color: var(--bad-fg); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn-fg); }
+
+  .lede {
+    font-size: 1.05rem;
+    color: var(--fg);
+    border-left: 4px solid var(--accent);
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  /* Two-column recommendation cards */
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+  }
+  .card h4 { margin: 0 0 0.5rem; font-size: 0.98rem; }
+  .card .tag {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); font-weight: 600;
+  }
+
+  .footgun-list { list-style: none; padding-left: 0; }
+  .footgun-list > li {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--warn-fg);
+    border-radius: 6px;
+    padding: 0.7rem 0.95rem;
+    margin: 0.6rem 0;
+  }
+  .footgun-list strong { color: var(--warn-fg); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+  .footer { color: var(--muted); font-size: 0.85rem; margin-top: 3rem; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; gap: 1rem; }
+    nav.toc { position: static; max-height: none; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+    .cards { grid-template-columns: 1fr; }
+  }
+  @media print {
+    nav.toc { display: none; }
+    .layout { display: block; max-width: 100%; }
+    a { color: var(--fg); text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#verdict">Verdict up front</a>
+    <a href="#models">How the two models line up</a>
+    <a href="#gain">What you'd gain</a>
+    <a href="#poor">Where it fits poorly</a>
+    <a href="#idiomatic">Idiomatic integration</a>
+    <a href="#footguns">Footgun checklist</a>
+    <a href="#alternatives">Alternatives</a>
+    <a href="#recommendation">Recommendation</a>
+    <a href="#next">Next steps</a>
+  </nav>
+
+  <main>
+    <h1>Does promptfoo fit <code>agentic-dx-improvement</code>?</h1>
+    <p class="subtitle">An evaluation of whether <a href="https://www.promptfoo.dev/docs/intro/">promptfoo</a> belongs in the Vaadin agentic-DX benchmark harness.</p>
+    <p class="meta">Prepared 2026-06-08 · Goal under consideration: benchmark how well different coding agents build Vaadin apps, and track whether it gets easier or harder over time.</p>
+
+    <!-- VERDICT -->
+    <h2 id="verdict">Verdict up front</h2>
+    <div class="callout verdict">
+      <h3>Partial fit — and the part that fits is not the part you most care about.</h3>
+      <p>Promptfoo is an excellent fit as a thin <strong>orchestration + scoreboard + CI-gate layer</strong> wrapped around your existing <code>run_task.sh</code> / <code>verify_task.sh</code>. It is a poor fit as the <strong>grader</strong> (your grading is agentic and browser-driven; promptfoo's <code>llm-rubric</code> is single-shot text grading) and it has <strong>no concept of your primary signal</strong> (the behavioural trace, per <code>CONTEXT.md</code>).</p>
+      <p>The specific thing you named — <em>"is it getting easier or harder day by day"</em> — is also <strong>not</strong> promptfoo OSS's strong suit. It does pairwise eval comparison well; longitudinal trend charts are an Enterprise/cloud feature.</p>
+      <p style="margin-bottom:0"><strong>Bottom line:</strong> don't abandon the idea. Adopt it for the matrix / scoreboard / CI gate, keep your custom solve + verify + trace pieces, and don't expect it to be your trend dashboard.</p>
+    </div>
+
+    <!-- MODELS -->
+    <h2 id="models">How the two models line up</h2>
+    <p>Promptfoo's universe is <code>prompts × providers × tests</code> → run each cell → score with <code>assert</code> → store results → compare in a web UI / gate in CI. Its unit of work is <strong>one provider call (an LLM call) → text output → assertions</strong>.</p>
+    <p>Your universe is <code>(agent × stack × problem)</code> → a <strong>multi-minute agentic Docker run</strong> → a <strong>filesystem tree + logs + cost summary</strong> → graded by a <strong>second agentic Docker run</strong> that boots the app and drives Playwright against a rubric. Four signals come out, the behavioural trace being primary.</p>
+
+    <table>
+      <thead>
+        <tr><th>Promptfoo concept</th><th>Your concept</th><th>Fit</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>providers</code> (one per LLM/endpoint)</td><td>the agent under test (<code>claude</code> / <code>codex</code>) via a custom provider that shells out to <code>run_task.sh</code></td><td><span class="badge good">Clean</span></td></tr>
+        <tr><td><code>tests</code> (vars + asserts)</td><td>one per <code>problem</code>, <code>vars: {problem, stack}</code></td><td><span class="badge good">Clean</span></td></tr>
+        <tr><td><code>prompts</code> (the thing under test, varied)</td><td><code>problems/base_prompt_&lt;stack&gt;.md</code> variants</td><td><span class="badge good">Idiomatic</span></td></tr>
+        <tr><td><code>cost</code> / <code>tokenUsage</code> (first-class)</td><td><code>summary.txt</code></td><td><span class="badge good">Real win</span></td></tr>
+        <tr><td><code>assert: llm-rubric</code> (model-graded)</td><td><code>verify_task.sh</code> + <code>rubric.md</code></td><td><span class="badge bad">Mismatch</span></td></tr>
+        <tr><td>named <code>metric</code>s + <code>weight</code>s</td><td>your per-section <code>verify-result.json</code> scores</td><td><span class="badge good">Maps well</span></td></tr>
+        <tr><td>eval history / <code>promptfoo view</code></td><td>"is it getting easier day by day"</td><td><span class="badge warn">Pairwise only</span></td></tr>
+        <tr><td>behavioural trace (<code>agent_timing.py</code>, <code>agent_archeology.py</code>)</td><td><strong>your PRIMARY signal</strong></td><td><span class="badge bad">No equivalent</span></td></tr>
+      </tbody>
+    </table>
+
+    <!-- GAIN -->
+    <h2 id="gain">What you'd genuinely gain</h2>
+    <ol>
+      <li><strong>Declarative matrix instead of bash loops.</strong> <code>providers: [claude, codex] × tests: [basic_form, basic_layout, md_ui_spec]</code> replaces hand-rolled loops, with built-in concurrency and a results store.</li>
+      <li><strong>A real comparison UI for free.</strong> <code>promptfoo view</code> gives you the side-by-side matrix (agent × problem, with cost/score columns) you'd otherwise hand-build.</li>
+      <li><strong>Cost / tokens become first-class.</strong> Your custom provider returns <code>cost</code> + <code>tokenUsage</code> from <code>summary.txt</code>; promptfoo aggregates and charts them. Directly serves your "cost &amp; speed" floor-constraint signal.</li>
+      <li><strong>CI gate + cron.</strong> The GitHub Action + non-zero exit on regression gives you the daily-run trigger essentially for free.</li>
+      <li><strong>Variance handling.</strong> <code>repeat: N</code> runs each cell N times and averages — important because a coding agent is highly stochastic and one run per cell is noisy.</li>
+      <li><strong>The base-prompt A/B loop, formalized.</strong> One of your three stated iteration loops is "tweak <code>base_prompt_&lt;stack&gt;.md</code> and re-run." That maps <em>exactly</em> onto promptfoo's core competency: put the base prompt in as the <code>prompt</code> and let promptfoo run the variation matrix. This is the single most idiomatic alignment.</li>
+    </ol>
+
+    <!-- POOR -->
+    <h2 id="poor">Where it fits poorly (the honest part)</h2>
+
+    <h3>1. Your grader is agentic; promptfoo's is not</h3>
+    <p><code>llm-rubric</code> / <code>g-eval</code> send <em>output text + rubric</em> to an LLM in one shot. Your rubric requires booting the app in production mode, resizing to six viewports, checking for horizontal scrollbars, instantiating the form inside a dialog, and reading source for <code>setRequiredIndicatorVisible</code>. No model-graded assertion can do that. <strong>You keep <code>verify_task.sh</code></strong> — it's your crown jewel and nothing off-the-shelf replaces it.</p>
+
+    <h3>2. Your primary signal is invisible to promptfoo</h3>
+    <p><code>CONTEXT.md</code> is explicit: the behavioural trace ("which skills fired, where it backtracked, API archaeology") is the deciding voice, <em>above</em> the rubric score. Promptfoo has no model for this. You can stuff trace-derived numbers (archeology-seconds, MCP-lookup count) into metadata as metrics, but promptfoo shows them as columns of numbers — it won't give you the narrative your scripts produce, and it won't <em>derive</em> them. Promptfoo would systematically under-serve the signal you steer on most.</p>
+
+    <h3>3. "Output" isn't text here</h3>
+    <p>The artifact is a filesystem tree + a running server. Not fatal — the provider returns a handle (run-dir path) as <code>output</code> and the real evaluation lives in metadata/metrics — but you're using promptfoo against its grain.</p>
+
+    <h3>4. The two-stage solve→verify pipeline doesn't match the single-call model</h3>
+    <p>Promptfoo thinks "one provider call → assert." You have two agentic runs. You can shoehorn (run verify inside the provider and return the score; or wrap verify as a custom python assertion), but neither is the path promptfoo is designed around.</p>
+
+    <h3>5. The variables you iterate on most are outside promptfoo's provenance</h3>
+    <p>You tune the <strong>skeleton</strong>, the <strong>skills submodule</strong>, and <strong>MCP behaviour</strong> — all of which live in the Docker image + the <code>agent-skills</code> submodule, invisible to promptfoo. It will record the prompt + provider config and think two runs are "the same" when the skeleton or skills changed underneath. Its caching and history comparisons are blind to your most important knobs unless you manually inject <code>git rev-parse</code> of the submodule, the image digest, etc. into provider metadata.</p>
+
+    <h3>6. "Easier day by day" is a trend question; OSS promptfoo answers diff questions</h3>
+    <p>It stores every eval with a timestamp and lets you compare two named evals. A 90-day trend line of "rubric score for <code>basic_form</code> on claude" is not a built-in OSS view (that's promptfoo cloud/Enterprise). For your stated goal you'd still export the metrics to your own time-series/CSV + a chart. Promptfoo gives you the per-run datapoints and a scoreboard, not the trend.</p>
+
+    <!-- IDIOMATIC -->
+    <h2 id="idiomatic">If you adopt it: the idiomatic shape</h2>
+    <p>Keep <code>run_task.sh</code> and <code>verify_task.sh</code> exactly as they are. Add promptfoo as a layer on top.</p>
+
+    <pre><code># promptfooconfig.yaml
+prompts:
+  # The base prompt IS the thing under test — the idiomatic A/B knob.
+  - file://problems/base_prompt_vaadin.md
+  # - file://problems/base_prompt_vaadin.variantB.md
+
+providers:
+  - id: file://providers/agent.js   # custom JS provider, see below
+    label: claude
+    config: { agent: claude }
+  - id: file://providers/agent.js
+    label: codex
+    config: { agent: codex }
+
+tests:
+  - vars: { problem: basic_form,   stack: vaadin }
+  - vars: { problem: basic_layout, stack: vaadin }
+  - vars: { problem: md_ui_spec,   stack: vaadin }
+
+defaultTest:
+  assert:
+    - type: javascript            # cheap deterministic gate
+      value: output.metadata.build === 'pass'
+    - type: javascript            # route verify-result.json in as the real score
+      value: output.metadata.rubricScore >= 0.8
+      metric: rubric
+  options:
+    # Caching MUST be off — every benchmark run is fresh.
+    # Timeout must be generous — these runs take minutes.</code></pre>
+
+    <p>The custom provider (<code>providers/agent.js</code>) is the whole integration. It:</p>
+    <ul>
+      <li>shells out to <code>run_task.sh &lt;config.agent&gt; &lt;vars.stack&gt; &lt;vars.problem&gt;</code> (feeding in the base prompt),</li>
+      <li>optionally runs <code>verify_task.sh</code> too,</li>
+      <li>parses <code>summary.txt</code> → returns <code>{ cost, tokenUsage }</code> (first-class),</li>
+      <li>parses <code>verify-result.json</code> → returns per-section scores as <code>metadata</code> metrics,</li>
+      <li>returns trace numbers from <code>agent_timing.py</code> / <code>agent_archeology.py</code> as metadata,</li>
+      <li>returns the run-dir path as <code>output</code>.</li>
+    </ul>
+    <p>Then promptfoo's matrix shows agent × problem, with columns for rubric score, cost, time, and your trace metrics — a legitimately nice scoreboard.</p>
+
+    <div class="callout">
+      <h4>Run discipline that's mandatory here</h4>
+      <ul style="margin-bottom:0">
+        <li><code>--no-cache</code> (or <code>cache: false</code>) — every benchmark run must be fresh.</li>
+        <li>Low <code>--max-concurrency</code> — each cell is a heavyweight Docker + Maven + Playwright run; 2–3 in parallel, not 10.</li>
+        <li>Generous per-provider timeout, reconciled with your existing <code>summary.txt</code> watchdog so promptfoo's timeout doesn't kill a healthy run.</li>
+        <li><code>repeat: 3+</code> to fight agent stochasticity.</li>
+      </ul>
+    </div>
+
+    <!-- FOOTGUNS -->
+    <h2 id="footguns">Footgun checklist</h2>
+    <ul class="footgun-list">
+      <li><strong>Caching is on by default</strong> → would silently return stale results for a benchmark. Disable it. Easy to forget; corrupts your data if you do.</li>
+      <li><strong>Cost blow-up.</strong> matrix = agents × problems × <code>repeat</code> × days. Each cell is a multi-minute, real-dollar agent run <em>plus</em> a multi-minute agentic verify. This grows fast; budget it before wiring a daily cron.</li>
+      <li><strong>Concurrency.</strong> Docker + JDK + Playwright/Chromium is RAM/CPU-heavy. Promptfoo's default concurrency will thrash your machine. Cap it.</li>
+      <li><strong>Timeouts.</strong> Multi-minute runs vs promptfoo's default provider timeout. Must be raised and reconciled with your watchdog.</li>
+      <li><strong>Provenance / reproducibility.</strong> For "easier over time" to mean anything, pin: full model IDs (use full IDs, not floating aliases), skeleton version, <code>agent-skills</code> submodule SHA, Docker image digest. Promptfoo won't capture these unless you inject them into metadata.</li>
+      <li><strong>The remote-MCP confound.</strong> Your skills point at <code>https://mcp.vaadin.com/docs</code>, a remote server that changes outside your control. That is simultaneously <em>a thing you want to measure</em> (better docs → easier for the agent) and <em>a confound</em> (a score drop on a fixed problem might be the MCP server regressing, not the agent). Nothing can disambiguate this without snapshotting MCP responses — you already have <code>mcp_probe.py</code>; consider logging its output per run as a provenance record.</li>
+    </ul>
+
+    <!-- ALTERNATIVES -->
+    <h2 id="alternatives">Alternatives to weigh</h2>
+    <ul>
+      <li><strong>Do nothing / extend what you have.</strong> You've already built the hard, domain-specific parts: matrix runner, cost parsing, agentic grader, trace analysis. Promptfoo would replace only the thin glue (loops) and add a UI/CI. A ~150-line aggregator that walks <code>results/**/verify-result.json</code> + <code>summary.txt</code> into a CSV + chart would directly serve your "daily trend" goal with zero new dependency and full fidelity to your four signals — including the behavioural trace promptfoo can't represent.</li>
+      <li><strong>Promptfoo as scoreboard only, your scripts as engine.</strong> The middle path described above — best ratio of value to shoehorning.</li>
+      <li><strong>General agent-eval harnesses</strong> (Inspect, SWE-bench-style runners, OpenAI evals): all share promptfoo's blind spot — none grade a <em>live browser-rendered UI against a visual rubric</em>. Your <code>verify_task.sh</code> is genuinely more specialized than anything off-the-shelf. Keep it whatever you decide.</li>
+    </ul>
+
+    <!-- RECOMMENDATION -->
+    <h2 id="recommendation">Recommendation</h2>
+    <p>It depends on which pain you're actually trying to relieve. The honest answer is conditional:</p>
+    <div class="cards">
+      <div class="card">
+        <div class="tag">If your pain is orchestration</div>
+        <h4>Adopt promptfoo</h4>
+        <p style="margin-bottom:0">If the felt pain is <em>"bash loops are unwieldy and I want a comparison UI + CI gate + cost tracking"</em> → adopt it as the thin orchestration layer (custom provider wrapping <code>run_task.sh</code>, verify routed in as metadata, <code>--no-cache</code>, low concurrency, <code>repeat</code>). Low risk, real convenience, and it formalizes your base-prompt A/B loop.</p>
+      </div>
+      <div class="card">
+        <div class="tag">If your pain is the trend</div>
+        <h4>Build in-house instead</h4>
+        <p style="margin-bottom:0">If the felt pain is <em>"I want to track the behavioural trace and a true day-by-day difficulty trend"</em> → promptfoo is the wrong primary tool. You'd fight it on both your primary signal and the trend view. A small in-house aggregator over <code>results/</code> (or promptfoo Enterprise) serves that better. Promptfoo can still ride along as a secondary scoreboard.</p>
+      </div>
+    </div>
+    <p class="lede">It's not "abandon the idea" — it's "use it for the matrix / scoreboard / CI, not for grading or trace, and don't expect it to be your trend dashboard."</p>
+
+    <!-- NEXT -->
+    <h2 id="next">Suggested next step</h2>
+    <p>Pick one small, self-contained spike:</p>
+    <ul>
+      <li><strong>(a)</strong> Prototype the custom JS provider + <code>promptfooconfig.yaml</code>, run the matrix once, and look at the UI.</li>
+      <li><strong>(b)</strong> Sketch the lightweight in-house aggregator + trend chart over <code>results/</code> instead.</li>
+    </ul>
+    <p>Either answers the open question — "is the orchestration convenience worth a new dependency, or do I just want the trend?" — in an afternoon.</p>
+
+    <hr>
+    <p class="footer">Generated analysis for <code>agentic-dx-improvement</code>. The repo and the promptfoo docs remain the source of truth; if anything here disagrees with them, trust them. Sources: <a href="https://www.promptfoo.dev/docs/intro/">promptfoo intro</a>, <a href="https://www.promptfoo.dev/docs/providers/custom-api/">custom providers</a>, <a href="https://www.promptfoo.dev/docs/configuration/expected-outputs/">assertions &amp; metrics</a>, and the repo's <code>README.md</code> / <code>CONTEXT.md</code> / <code>run_task.sh</code> / <code>verify_task.sh</code> / <code>verify_prompt.md</code>.</p>
+
+  </main>
+</div>
+</body>
+</html>
