@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code session review — week of 2026-06-15</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1a1d21; --muted:#5c6670; --line:#e4e8ec;
+    --accent:#3b82f6; --accent2:#8b5cf6;
+    --red:#ef4444; --amber:#f59e0b; --green:#10b981; --teal:#14b8a6; --slate:#64748b;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 16px rgba(16,24,40,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 80px}
+  header.page{margin-bottom:8px}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  h1{font-size:34px;line-height:1.15;margin:8px 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:17px;max-width:680px}
+  .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+  .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--muted);box-shadow:var(--shadow)}
+  .pill b{color:var(--ink)}
+
+  section{margin-top:40px}
+  h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 16px;display:flex;align-items:center;gap:10px}
+  h2::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* headline stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .stat .n{font-size:38px;font-weight:750;letter-spacing:-.02em;line-height:1}
+  .stat .l{color:var(--muted);font-size:13.5px;margin-top:8px}
+  .stat .n.accent{color:var(--accent)}
+  .stat .n.red{color:var(--red)}
+
+  /* friction chart */
+  .chart{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 24px 12px;box-shadow:var(--shadow)}
+  .row{display:grid;grid-template-columns:230px 1fr 52px;align-items:center;gap:14px;padding:9px 0;border-top:1px solid var(--line)}
+  .row:first-child{border-top:none}
+  .row .lab{font-size:14px;font-weight:600}
+  .row .lab span{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:1px}
+  .bar{height:24px;border-radius:7px;background:linear-gradient(90deg,var(--c1),var(--c2));min-width:6px;position:relative}
+  .pct{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+  .legend{color:var(--muted);font-size:12.5px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+  .note{font-size:14px;color:var(--muted);margin-top:10px}
+  .quart{margin-top:18px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:center}
+  .quart .big{font-size:40px;font-weight:800;color:var(--amber);line-height:1}
+  .quart .t{font-size:14.5px;color:#7c2d12}
+  .quart .t b{color:#7c2d12}
+
+  /* recommendation cards */
+  .rec{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+  .rec .top{display:flex;gap:16px;padding:18px 20px}
+  .rank{flex:none;width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:750;font-size:18px}
+  .rec h3{margin:0 0 4px;font-size:18px;letter-spacing:-.01em}
+  .rec .lead{color:var(--muted);font-size:14.5px}
+  .rec .body{padding:0 20px 18px 74px}
+  .rec ul{margin:6px 0 0;padding-left:18px}
+  .rec li{margin:5px 0;font-size:14.5px}
+  .ev{margin-top:12px;font-size:12.5px;color:var(--slate);background:#f1f5f9;border-radius:8px;padding:8px 11px;display:inline-block}
+  .ev b{color:var(--ink)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .tag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid var(--line)}
+  .tag.tool{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+  .tag.save{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+  /* effort/impact badges */
+  .badge{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-left:6px}
+  .b-high{background:#ecfdf5;color:#047857}
+  .b-med{background:#fef3c7;color:#92400e}
+  .b-now{background:#ede9fe;color:#6d28d9}
+
+  /* reframe block */
+  .reframe{background:linear-gradient(135deg,#1e293b,#0f172a);color:#e2e8f0;border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
+  .reframe h3{margin:0 0 10px;color:#fff;font-size:20px}
+  .reframe .quote{border-left:3px solid var(--accent);padding:6px 0 6px 16px;margin:16px 0;font-size:16px;color:#cbd5e1;font-style:italic}
+  .reframe .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px;font-size:13.5px}
+  .reframe .step{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:7px 11px}
+  .reframe .arr{color:var(--accent);font-weight:700}
+  .reframe .out{background:var(--green);color:#04241a;border:none;font-weight:700}
+
+  /* small wins */
+  .wins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .win{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 16px;box-shadow:var(--shadow);font-size:14px}
+  .win b{display:block;margin-bottom:3px}
+  .win span{color:var(--muted);font-size:13px}
+
+  footer{margin-top:46px;color:var(--muted);font-size:13px;text-align:center}
+  @media(max-width:680px){
+    .stats{grid-template-columns:1fr}
+    .row{grid-template-columns:140px 1fr 44px}
+    .rec .body{padding-left:20px}
+    .wins{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <div class="eyebrow">Workflow review</div>
+    <h1>Where your week went — and how to get it back</h1>
+    <p class="sub">An analysis of your Claude Code sessions for the week ending 2026-06-15. The work is one tight loop: <b>run agent benchmarks → babysit → report → PR/merge/clean up → repeat.</b> Roughly a quarter of everything you typed was mechanics <em>around</em> that loop, not the loop itself.</p>
+    <div class="meta">
+      <span class="pill"><b>383</b> typed prompts</span>
+      <span class="pill"><b>~60</b> sessions</span>
+      <span class="pill"><b>3</b> repos · promptfoo · dx-improvement · evstats</span>
+      <span class="pill">window: <b>Jun 8 – 15</b></span>
+    </div>
+  </header>
+
+  <section>
+    <h2>The headline</h2>
+    <div class="stats">
+      <div class="stat"><div class="n accent">383</div><div class="l">human-typed prompts in 7 days — heavy, focused usage</div></div>
+      <div class="stat"><div class="n red">~25%</div><div class="l">spent on plumbing <em>around</em> the work: git, polling, report styling</div></div>
+      <div class="stat"><div class="n">8+</div><div class="l">times you re-ran essentially the same benchmark matrix by hand</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where the prompts actually went</h2>
+    <div class="chart">
+      <div class="row" style="--c1:#ef4444;--c2:#f87171">
+        <div class="lab">PR / merge / branch chores<span>"merge it", "create a PR", "delete the branch", "sync main"</span></div>
+        <div class="bar" style="width:100%"></div><div class="pct">11%</div>
+      </div>
+      <div class="row" style="--c1:#f59e0b;--c2:#fbbf24">
+        <div class="lab">Report generation + styling<span>"create a report", "increase the badge fonts", "make the chart taller"</span></div>
+        <div class="bar" style="width:45%"></div><div class="pct">5%</div>
+      </div>
+      <div class="row" style="--c1:#14b8a6;--c2:#2dd4bf">
+        <div class="lab">Polling a running job<span>"still running?", "how far?", "ping me when done", "is it stuck?"</span></div>
+        <div class="bar" style="width:36%"></div><div class="pct">4%</div>
+      </div>
+      <div class="row" style="--c1:#8b5cf6;--c2:#a78bfa">
+        <div class="lab">Git confusion<span>ghost commits creeping, worktrees, "what branch am I on?"</span></div>
+        <div class="bar" style="width:27%"></div><div class="pct">3%</div>
+      </div>
+      <div class="row" style="--c1:#3b82f6;--c2:#60a5fa">
+        <div class="lab">Kicking off benchmark runs<span>re-typing the full provider matrix in prose each time</span></div>
+        <div class="bar" style="width:18%"></div><div class="pct">2%</div>
+      </div>
+      <p class="legend">Bars are % of all 383 typed prompts. Categories are keyword-matched and overlap slightly — the point is the shape, not decimals.</p>
+      <div class="quart">
+        <div class="big">¼</div>
+        <div class="t"><b>About 1 in 4 prompts</b> is mechanics around the work rather than the work itself. Every category below is independently fixable with tooling already in your environment.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The five highest-leverage changes</h2>
+
+    <div class="rec">
+      <div class="top">
+        <div class="rank">1</div>
+        <div><h3>Stop babysitting runs — make them notify you<span class="badge b-now">build now</span></h3>
+          <div class="lead">You polled a live job 16+ times. An entire session was mostly "still running?".</div></div>
+      </div>
+      <div class="body">
+        <ul>
+          <li>Run benchmarks as <b>background tasks</b> → auto-notified on completion; keep working meanwhile.</li>
+          <li>Use <b>/loop</b> self-paced to watch a run and ping you only on a state change or hang.</li>
+          <li>Add a <b>watchdog</b> that kills + flags any run past your known max wall-clock, so hangs surface themselves.</li>
+        </ul>
+        <div class="ev">Evidence: sessions <b>a3b0b357</b>, <b>25cc175f</b>, <b>78df05ca</b> — repeated hang investigations &amp; status polling.</div>
+        <div class="tags"><span class="tag tool">background Bash</span><span class="tag tool">/loop</span><span class="tag save">~16 prompts/wk saved</span></div>
+      </div>
+    </div>
+
+    <div class="rec">
+      <div class="top">
+        <div class="rank">2</div>
+        <div><h3>Collapse the PR/merge/cleanup ritual into one <code>/ship</code> skill<span class="badge b-now">build now</span></h3>
+          <div class="lead">11% of everything you type is git plumbing that's fully deterministic.</div></div>
+      </div>
+      <div class="body">
+        <ul>
+          <li>One pipeline: <b>commit → push → PR → (your OK) → squash-merge → delete branch → sync main → prune locals.</b></li>
+          <li>Builds directly on the <code>github</code> skill you already have — it's one composition layer above it.</li>
+        </ul>
+        <div class="ev">Evidence: <b>43</b> prompts matched merge/branch chores across the week.</div>
+        <div class="tags"><span class="tag tool">github skill</span><span class="tag tool">custom skill</span><span class="tag save">~40 → ~10 prompts/wk</span></div>
+      </div>
+    </div>
+
+    <div class="rec">
+      <div class="top">
+        <div class="rank">3</div>
+        <div><h3>Fix the fork-sync workflow — the "ghost commits" are a real process bug<span class="badge b-high">quick win</span></h3>
+          <div class="lead">You hit it twice and asked "what did I do wrong exactly?" — it'll keep recurring until the fork stops diverging from upstream.</div></div>
+      </div>
+      <div class="body">
+        <ul>
+          <li>Set <code>main</code> to track upstream, <b>rebase</b> (not merge) on sync, add a <code>git-sync-fork</code> alias.</li>
+          <li>One-time fix that removes a recurring source of confusion and bad branch state.</li>
+        </ul>
+        <div class="ev">Evidence: <b>e99d2908</b> (ghost commits / "contribute" loop), <b>25786a24</b> (branch confusion in statusline).</div>
+        <div class="tags"><span class="tag tool">git config</span><span class="tag save">recurring annoyance gone</span></div>
+      </div>
+    </div>
+
+    <div class="rec">
+      <div class="top">
+        <div class="rank">4</div>
+        <div><h3>Freeze the report into a template + <code>bench-report</code> skill<span class="badge b-now">build now</span></h3>
+          <div class="lead">One session was ~23 prompts of pure micro-styling. The layout has now converged — lock it.</div></div>
+      </div>
+      <div class="body">
+        <ul>
+          <li>Skill takes start/end eval URLs → emits the final HTML directly (screenshots-under-chapter, rubric badges, grouped chart, task boxes).</li>
+          <li>Earlier attempt got "messy" only because the template wasn't stable yet. <b>It is now.</b></li>
+        </ul>
+        <div class="ev">Evidence: <b>d3dfe135</b> (~23 styling prompts), <b>ae05592c</b> (generator created then deleted), <b>1aed3b31</b>.</div>
+        <div class="tags"><span class="tag tool">custom skill + template</span><span class="tag save">23 prompts → 1</span></div>
+      </div>
+    </div>
+
+    <div class="rec">
+      <div class="top">
+        <div class="rank">5</div>
+        <div><h3>One-command run orchestration via named profiles<span class="badge b-med">after SETUPS refactor</span></h3>
+          <div class="lead">Every run re-specifies the provider matrix in prose. You've run the same matrix 8+ times.</div></div>
+      </div>
+      <div class="body">
+        <ul>
+          <li><code>./bench/run.sh --profile pw-cli-compare</code> instead of a paragraph of providers.</li>
+          <li>The <b>SETUPS registry refactor</b> you already scoped is the right substrate — finish it, wire profiles on top.</li>
+        </ul>
+        <div class="ev">Evidence: <b>fcb4b1f8</b> (SETUPS refactor scoped), plus 8+ near-identical run kickoffs.</div>
+        <div class="tags"><span class="tag tool">run profiles</span><span class="tag save">paragraph → one flag</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The bigger "different way"</h2>
+    <div class="reframe">
+      <h3>You're running a daily agent-benchmark harness by hand. It wants to be a headless pipeline.</h3>
+      <p>Every piece already exists in your setup — scheduled agents, background tasks, the report template, the <code>/ship</code> pipeline. The missing move is letting the <b>schedule + notifications drive it</b> instead of you.</p>
+      <div class="quote">A scheduled agent runs the matrix overnight → detects hangs itself → builds the report from the frozen template → opens the PR → pings you with <b>just the diff vs. yesterday</b>.</div>
+      <div class="flow">
+        <span class="step">cron / scheduled agent</span><span class="arr">→</span>
+        <span class="step">run matrix overnight</span><span class="arr">→</span>
+        <span class="step">self-detect hangs</span><span class="arr">→</span>
+        <span class="step">report from template</span><span class="arr">→</span>
+        <span class="step">open PR</span><span class="arr">→</span>
+        <span class="step out">you review 1 PR ☕</span>
+      </div>
+      <p style="margin-top:18px;color:#94a3b8;font-size:13.5px">You're already circling this — the <code>--isolated</code> manual runner (<b>a3d52792</b>) and the Raspberry Pi idea (<b>843a8955</b>). From ~25 prompts/run-cycle to reviewing one PR in the morning.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Smaller wins worth a few minutes</h2>
+    <div class="wins">
+      <div class="win"><b>Cheat-sheet the repeated infra Qs</b><span>"where's the DB?", "is it self-contained?", "how to switch API↔subscription?" — put answers in CLAUDE.md so neither of us re-discovers them.</span></div>
+      <div class="win"><b>Root-cause the start-run pop-up</b><span>Seen repeatedly (session 19ca5685, Image #1), never diagnosed. ~10 minutes.</span></div>
+      <div class="win"><b>One living architecture doc</b><span>You keep asking "why 2 phases?", "worktree lifecycle?". You generated throwaway HTML explainers — keep one current instead.</span></div>
+      <div class="win"><b>Prune throwaway report generators</b><span>Decide: template-driven skill (rec #4) is the keeper; delete the half-built generators to stop the churn.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Suggested order</h2>
+    <div class="chart">
+      <p class="note" style="margin-top:0">Fastest payback first: <b>#2 /ship skill</b> and <b>#4 frozen bench-report template</b> eliminate the biggest chunks of repetitive typing — both buildable immediately. <b>#3 fork-sync</b> is a quick, high-annoyance-reduction add-on. <b>#1 notifications</b> and <b>#5 run profiles</b> then turn the whole loop into the headless pipeline above.</p>
+    </div>
+  </section>
+
+  <footer>
+    Generated from Claude Code session transcripts · week ending 2026-06-15 · analysis is descriptive, not a substitute for your own read of the runs.
+  </footer>
+
+</div>
+</body>
+</html>
