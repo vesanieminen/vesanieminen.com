@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-locale="en">
+<html lang="en" data-locale="en" data-theme="system">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,19 +7,28 @@
   <title>Vesa Nieminen</title>
   <script>
     (function () {
+      var root = document.documentElement;
       var list = (navigator.languages && navigator.languages.length)
         ? navigator.languages
         : [navigator.language || "en"];
-      var fi = false;
+      var browserFi = false;
       for (var i = 0; i < list.length; i++) {
         if (String(list[i]).toLowerCase().split("-")[0] === "fi") {
-          fi = true;
+          browserFi = true;
           break;
         }
       }
-      var locale = fi ? "fi" : "en";
-      document.documentElement.lang = locale;
-      document.documentElement.setAttribute("data-locale", locale);
+      var locale = null;
+      var theme = null;
+      try {
+        locale = localStorage.getItem("locale");
+        theme = localStorage.getItem("theme");
+      } catch (e) {}
+      if (locale !== "fi" && locale !== "en") locale = browserFi ? "fi" : "en";
+      if (theme !== "light" && theme !== "dark" && theme !== "system") theme = "system";
+      root.lang = locale;
+      root.setAttribute("data-locale", locale);
+      root.setAttribute("data-theme", theme);
       var descriptions = {
         en: "Vesa Nieminen — professional software developer / game developer hobbyist fella in Turku, Finland. Maker of Liukuri.",
         fi: "Vesa Nieminen — ohjelmistokehittäjä / pelikehittäjäharrastelija Turusta. Liukurin tekijä."
@@ -29,44 +38,72 @@
     })();
   </script>
   <style>
-    :root {
+    :root,
+    html[data-theme="light"] {
+      color-scheme: light;
       --bg: #f3efe8;
       --bg-elevated: #fbf8f3;
       --fg: #1c1a16;
       --fg-muted: #5c574f;
       --fg-subtle: #8a8379;
-      --border: color-mix(in oklab, var(--fg) 12%, transparent);
-      --border-strong: color-mix(in oklab, var(--fg) 22%, transparent);
       --accent: #1e4a3c;
       --accent-hover: #16382d;
+      --selected-bg: #1c1a16;
+      --selected-fg: #f3efe8;
+    }
 
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #13110f;
+      --bg-elevated: #1c1916;
+      --fg: #f3efe8;
+      --fg-muted: #b8b1a6;
+      --fg-subtle: #8f887e;
+      --accent: #9dccb4;
+      --accent-hover: #c5e4d4;
+      --selected-bg: #f3efe8;
+      --selected-fg: #13110f;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html[data-theme="system"] {
+        color-scheme: dark;
+        --bg: #13110f;
+        --bg-elevated: #1c1916;
+        --fg: #f3efe8;
+        --fg-muted: #b8b1a6;
+        --fg-subtle: #8f887e;
+        --accent: #9dccb4;
+        --accent-hover: #c5e4d4;
+        --selected-bg: #f3efe8;
+        --selected-fg: #13110f;
+      }
+    }
+
+    :root {
+      --border: color-mix(in oklab, var(--fg) 12%, transparent);
+      --border-strong: color-mix(in oklab, var(--fg) 22%, transparent);
       --radius-sm: 8px;
+      --radius-md: 10px;
       --radius-lg: 20px;
-
       --space-2: 8px;
       --space-3: 12px;
       --space-4: 16px;
       --space-5: 24px;
       --space-6: 32px;
-      --space-7: 48px;
       --space-8: 64px;
-
       --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
       --text-sm: 0.9375rem;
       --text-base: 1.0625rem;
       --text-lg: 1.125rem;
       --text-xl: clamp(1.35rem, 1.1rem + 1vw, 1.6rem);
       --text-2xl: clamp(2rem, 1.4rem + 2.2vw, 2.75rem);
-
       --leading-tight: 1.12;
       --leading-snug: 1.35;
       --leading-normal: 1.55;
-
       --motion-quick: 150ms;
       --motion-fast: 250ms;
       --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-
       --content: 42rem;
     }
 
@@ -88,6 +125,9 @@
       text-wrap: pretty;
     }
 
+    button:not(:disabled),
+    [role="button"]:not(:disabled) { cursor: pointer; }
+
     a {
       color: var(--accent);
       text-decoration: underline;
@@ -98,7 +138,8 @@
 
     a:hover { color: var(--accent-hover); }
 
-    a:focus-visible {
+    a:focus-visible,
+    button:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 3px;
       border-radius: 2px;
@@ -116,11 +157,16 @@
     }
 
     header.site {
+      display: grid;
+      gap: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+
+    .site-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: var(--space-4);
-      margin-bottom: var(--space-8);
     }
 
     .mark {
@@ -133,6 +179,57 @@
     .nav-link {
       font-size: var(--text-sm);
       font-weight: 500;
+    }
+
+    .prefs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4) var(--space-6);
+    }
+
+    .seg {
+      display: grid;
+      gap: 6px;
+    }
+
+    .seg-label {
+      font-size: 0.75rem;
+      font-weight: 650;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fg-subtle);
+    }
+
+    .seg-btns {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--bg-elevated);
+    }
+
+    .seg-btns button {
+      appearance: none;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--fg-muted);
+      min-height: 40px;
+      padding: 0 0.85rem;
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 550;
+      line-height: 1;
+    }
+
+    .seg-btns button + button {
+      border-left: 1px solid var(--border);
+    }
+
+    .seg-btns button[aria-pressed="true"] {
+      background: var(--selected-bg);
+      color: var(--selected-fg);
     }
 
     .hero {
@@ -182,9 +279,7 @@
       color: var(--fg-subtle);
     }
 
-    .contact {
-      margin-bottom: var(--space-8);
-    }
+    .contact { margin-bottom: var(--space-8); }
 
     .contact-list {
       list-style: none;
@@ -267,7 +362,7 @@
     }
 
     .project-url {
-      margin-top: var(--space-1, 4px);
+      margin-top: 4px;
       font-weight: 600;
       color: var(--accent);
       text-decoration: underline;
@@ -296,6 +391,7 @@
       }
       .avatar { width: 64px; height: 64px; }
       .project { padding: var(--space-4); }
+      .seg-btns button { min-height: 44px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -308,8 +404,39 @@
 <body>
   <div class="page">
     <header class="site">
-      <span class="mark">vesanieminen.com</span>
-      <a class="nav-link" href="https://github.com/vesanieminen">GitHub</a>
+      <div class="site-top">
+        <span class="mark">vesanieminen.com</span>
+        <a class="nav-link" href="https://github.com/vesanieminen">GitHub</a>
+      </div>
+      <div class="prefs">
+        <div class="seg" role="group" aria-labelledby="lang-label">
+          <span class="seg-label" id="lang-label">
+            <span class="en">Language</span>
+            <span class="fi">Kieli</span>
+          </span>
+          <div class="seg-btns">
+            <button type="button" data-set-locale="fi" aria-pressed="false">Suomi</button>
+            <button type="button" data-set-locale="en" aria-pressed="false">English</button>
+          </div>
+        </div>
+        <div class="seg" role="group" aria-labelledby="theme-label">
+          <span class="seg-label" id="theme-label">
+            <span class="en">Theme</span>
+            <span class="fi">Teema</span>
+          </span>
+          <div class="seg-btns">
+            <button type="button" data-set-theme="light" aria-pressed="false">
+              <span class="en">Light</span><span class="fi">Vaalea</span>
+            </button>
+            <button type="button" data-set-theme="dark" aria-pressed="false">
+              <span class="en">Dark</span><span class="fi">Tumma</span>
+            </button>
+            <button type="button" data-set-theme="system" aria-pressed="false">
+              <span class="en">System</span><span class="fi">Järjestelmä</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <section class="hero">
@@ -373,5 +500,52 @@
       </p>
     </footer>
   </div>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var descriptions = {
+        en: "Vesa Nieminen — professional software developer / game developer hobbyist fella in Turku, Finland. Maker of Liukuri.",
+        fi: "Vesa Nieminen — ohjelmistokehittäjä / pelikehittäjäharrastelija Turusta. Liukurin tekijä."
+      };
+
+      function sync() {
+        var locale = root.getAttribute("data-locale");
+        var theme = root.getAttribute("data-theme");
+        document.querySelectorAll("[data-set-locale]").forEach(function (btn) {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-set-locale") === locale ? "true" : "false");
+        });
+        document.querySelectorAll("[data-set-theme]").forEach(function (btn) {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-set-theme") === theme ? "true" : "false");
+        });
+        var meta = document.querySelector('meta[name="description"]');
+        if (meta) meta.setAttribute("content", descriptions[locale]);
+      }
+
+      function setLocale(locale) {
+        root.lang = locale;
+        root.setAttribute("data-locale", locale);
+        try { localStorage.setItem("locale", locale); } catch (e) {}
+        sync();
+      }
+
+      function setTheme(theme) {
+        root.setAttribute("data-theme", theme);
+        try { localStorage.setItem("theme", theme); } catch (e) {}
+        sync();
+      }
+
+      document.querySelectorAll("[data-set-locale]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          setLocale(btn.getAttribute("data-set-locale"));
+        });
+      });
+      document.querySelectorAll("[data-set-theme]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          setTheme(btn.getAttribute("data-set-theme"));
+        });
+      });
+      sync();
+    })();
+  </script>
 </body>
 </html>
