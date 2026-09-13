@@ -157,16 +157,11 @@
     }
 
     header.site {
-      display: grid;
-      gap: var(--space-5);
-      margin-bottom: var(--space-8);
-    }
-
-    .site-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: var(--space-4);
+      margin-bottom: var(--space-8);
     }
 
     .mark {
@@ -176,60 +171,48 @@
       color: var(--fg-muted);
     }
 
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
     .nav-link {
       font-size: var(--text-sm);
       font-weight: 500;
+      margin-left: 0.5rem;
     }
 
-    .prefs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-4) var(--space-6);
-    }
-
-    .seg {
-      display: grid;
-      gap: 6px;
-    }
-
-    .seg-label {
-      font-size: 0.75rem;
-      font-weight: 650;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--fg-subtle);
-    }
-
-    .seg-btns {
-      display: inline-flex;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      background: var(--bg-elevated);
-    }
-
-    .seg-btns button {
+    .icon-btn {
       appearance: none;
       margin: 0;
       border: 0;
-      border-radius: 0;
+      border-radius: 8px;
       background: transparent;
       color: var(--fg-muted);
-      min-height: 40px;
-      padding: 0 0.85rem;
-      font: inherit;
-      font-size: 0.875rem;
-      font-weight: 550;
-      line-height: 1;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: grid;
+      place-items: center;
     }
 
-    .seg-btns button + button {
-      border-left: 1px solid var(--border);
+    .icon-btn:hover {
+      color: var(--fg);
+      background: color-mix(in oklab, var(--fg) 7%, transparent);
     }
 
-    .seg-btns button[aria-pressed="true"] {
-      background: var(--selected-bg);
-      color: var(--selected-fg);
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
+      display: none;
+    }
+
+    [data-toggle-locale] svg,
+    html[data-theme="light"] [data-toggle-theme] svg[data-icon="light"],
+    html[data-theme="dark"] [data-toggle-theme] svg[data-icon="dark"],
+    html[data-theme="system"] [data-toggle-theme] svg[data-icon="system"] {
+      display: block;
     }
 
     .hero {
@@ -391,7 +374,7 @@
       }
       .avatar { width: 64px; height: 64px; }
       .project { padding: var(--space-4); }
-      .seg-btns button { min-height: 44px; }
+      .icon-btn { width: 44px; height: 44px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -404,38 +387,28 @@
 <body>
   <div class="page">
     <header class="site">
-      <div class="site-top">
-        <span class="mark">vesanieminen.com</span>
+      <span class="mark">vesanieminen.com</span>
+      <div class="toolbar">
+        <button type="button" class="icon-btn" data-toggle-locale aria-label="Suomi">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9S14.5 18.2 12 21C9.5 18.2 8.2 15.2 8.2 12S9.5 5.8 12 3Z" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </button>
+        <button type="button" class="icon-btn" data-toggle-theme aria-label="System">
+          <svg data-icon="light" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M12 3v1.6M12 19.4V21M3 12h1.6M19.4 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <svg data-icon="dark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 13.5A8 8 0 1 1 10.5 4 6.4 6.4 0 0 0 20 13.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <svg data-icon="system" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3.5" y="4.5" width="17" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M8 19.5h8M12 16.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
         <a class="nav-link" href="https://github.com/vesanieminen">GitHub</a>
-      </div>
-      <div class="prefs">
-        <div class="seg" role="group" aria-labelledby="lang-label">
-          <span class="seg-label" id="lang-label">
-            <span class="en">Language</span>
-            <span class="fi">Kieli</span>
-          </span>
-          <div class="seg-btns">
-            <button type="button" data-set-locale="fi" aria-pressed="false">Suomi</button>
-            <button type="button" data-set-locale="en" aria-pressed="false">English</button>
-          </div>
-        </div>
-        <div class="seg" role="group" aria-labelledby="theme-label">
-          <span class="seg-label" id="theme-label">
-            <span class="en">Theme</span>
-            <span class="fi">Teema</span>
-          </span>
-          <div class="seg-btns">
-            <button type="button" data-set-theme="light" aria-pressed="false">
-              <span class="en">Light</span><span class="fi">Vaalea</span>
-            </button>
-            <button type="button" data-set-theme="dark" aria-pressed="false">
-              <span class="en">Dark</span><span class="fi">Tumma</span>
-            </button>
-            <button type="button" data-set-theme="system" aria-pressed="false">
-              <span class="en">System</span><span class="fi">Järjestelmä</span>
-            </button>
-          </div>
-        </div>
       </div>
     </header>
 
@@ -503,20 +476,31 @@
   <script>
     (function () {
       var root = document.documentElement;
+      var themes = ["light", "dark", "system"];
       var descriptions = {
         en: "Vesa Nieminen — professional software developer / game developer hobbyist fella in Turku, Finland. Maker of Liukuri.",
         fi: "Vesa Nieminen — ohjelmistokehittäjä / pelikehittäjäharrastelija Turusta. Liukurin tekijä."
+      };
+      var themeLabel = {
+        en: { light: "Light", dark: "Dark", system: "System" },
+        fi: { light: "Vaalea", dark: "Tumma", system: "Järjestelmä" }
       };
 
       function sync() {
         var locale = root.getAttribute("data-locale");
         var theme = root.getAttribute("data-theme");
-        document.querySelectorAll("[data-set-locale]").forEach(function (btn) {
-          btn.setAttribute("aria-pressed", btn.getAttribute("data-set-locale") === locale ? "true" : "false");
-        });
-        document.querySelectorAll("[data-set-theme]").forEach(function (btn) {
-          btn.setAttribute("aria-pressed", btn.getAttribute("data-set-theme") === theme ? "true" : "false");
-        });
+        var langBtn = document.querySelector("[data-toggle-locale]");
+        var themeBtn = document.querySelector("[data-toggle-theme]");
+        if (langBtn) {
+          var nextLang = locale === "fi" ? "English" : "Suomi";
+          langBtn.setAttribute("aria-label", nextLang);
+          langBtn.setAttribute("title", nextLang);
+        }
+        if (themeBtn) {
+          var label = themeLabel[locale][theme];
+          themeBtn.setAttribute("aria-label", label);
+          themeBtn.setAttribute("title", label);
+        }
         var meta = document.querySelector('meta[name="description"]');
         if (meta) meta.setAttribute("content", descriptions[locale]);
       }
@@ -534,16 +518,20 @@
         sync();
       }
 
-      document.querySelectorAll("[data-set-locale]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          setLocale(btn.getAttribute("data-set-locale"));
+      var langBtn = document.querySelector("[data-toggle-locale]");
+      if (langBtn) {
+        langBtn.addEventListener("click", function () {
+          setLocale(root.getAttribute("data-locale") === "fi" ? "en" : "fi");
         });
-      });
-      document.querySelectorAll("[data-set-theme]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          setTheme(btn.getAttribute("data-set-theme"));
+      }
+      var themeBtn = document.querySelector("[data-toggle-theme]");
+      if (themeBtn) {
+        themeBtn.addEventListener("click", function () {
+          var current = root.getAttribute("data-theme");
+          var next = themes[(themes.indexOf(current) + 1) % themes.length];
+          setTheme(next);
         });
-      });
+      }
       sync();
     })();
   </script>
