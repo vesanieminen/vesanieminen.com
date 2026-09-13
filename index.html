@@ -1,59 +1,346 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Vesa Nieminen — software developer. Maker of Liukuri, a Finnish electricity price dashboard and cost calculator.">
+  <title>Vesa Nieminen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3efe8;
+      --bg-elevated: #fbf8f3;
+      --fg: #1c1a16;
+      --fg-muted: #6a645c;
+      --fg-subtle: #8a8379;
+      --border: color-mix(in oklab, var(--fg) 12%, transparent);
+      --border-strong: color-mix(in oklab, var(--fg) 22%, transparent);
+      --accent: #1e4a3c;
+      --accent-hover: #16382d;
+      --accent-soft: color-mix(in oklab, var(--accent) 8%, var(--bg-elevated));
 
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Vesanieminen.com : ">
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
 
-    <title>Vesanieminen.com</title>
-  </head>
+      --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+      --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
 
-  <body>
+      --text-sm: 0.9375rem;
+      --text-base: 1.0625rem;
+      --text-lg: 1.2rem;
+      --text-xl: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
+      --text-2xl: clamp(2.4rem, 1.6rem + 3.2vw, 3.6rem);
 
-    <!-- Homepage redesign in progress -->
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/vesanieminen/vesanieminen.com">View on GitHub</a>
+      --leading-tight: 1.08;
+      --leading-snug: 1.28;
+      --leading-normal: 1.55;
+      --tracking-display: -0.03em;
 
-          <h1 id="project_title">Vesanieminen.com</h1>
-          <h2 id="project_tagline"></h2>
+      --motion-quick: 150ms;
+      --motion-fast: 250ms;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/vesanieminen/vesanieminen.com/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/vesanieminen/vesanieminen.com/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
+      --content: 42rem;
+    }
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
-<a id="contact-me-at" class="anchor" href="#contact-me-at" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact me at</h3>
+    *, *::before, *::after { box-sizing: border-box; }
 
-<ul>
-<li><a href="mailto:vesa.nieminen@gmail.com">vesa.nieminen@gmail.com</a></li>
-<li>+358401461471</li>
-<li><a href="http://twitter.com/vesanieminen">http://twitter.com/vesanieminen</a></li>
-<li><a href="https://fi.linkedin.com/in/vnieminen">https://fi.linkedin.com/in/vnieminen</a></li>
-<li><a href="https://stackoverflow.com/users/963/vesa-nieminen">https://stackoverflow.com/users/963/vesa-nieminen</a></li>
-</ul>
-      </section>
-    </div>
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Vesanieminen.com maintained by <a href="https://github.com/vesanieminen">vesanieminen</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--leading-normal);
+      text-wrap: pretty;
+    }
 
-    
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.18em;
+      transition: color var(--motion-quick) var(--ease-out);
+    }
 
-  </body>
+    a:hover { color: var(--accent-hover); }
+
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+
+    .page {
+      width: min(100% - 2.5rem, var(--content));
+      margin: 0 auto;
+      padding: var(--space-6) 0 var(--space-8);
+    }
+
+    header.site {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .mark {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: lowercase;
+      color: var(--fg-muted);
+    }
+
+    .nav-link {
+      color: var(--fg);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      text-decoration: none;
+      border-bottom: 1px solid var(--border-strong);
+      padding-bottom: 1px;
+    }
+
+    .nav-link:hover { color: var(--accent); border-color: var(--accent); }
+
+    .hero {
+      display: grid;
+      gap: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+
+    .identity {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 500;
+      line-height: var(--leading-tight);
+      letter-spacing: var(--tracking-display);
+      text-wrap: balance;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 34rem;
+      color: var(--fg-muted);
+      font-size: var(--text-lg);
+      line-height: var(--leading-snug);
+      text-wrap: pretty;
+    }
+
+    h2 {
+      margin: 0 0 var(--space-4);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--fg-subtle);
+    }
+
+    .project {
+      display: grid;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 1px 0 color-mix(in oklab, var(--fg) 4%, transparent);
+    }
+
+    .project h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 500;
+      letter-spacing: var(--tracking-display);
+      line-height: var(--leading-tight);
+    }
+
+    .project p {
+      margin: 0;
+      color: var(--fg-muted);
+      max-width: 36rem;
+    }
+
+    .project-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: var(--space-2);
+      width: fit-content;
+      min-height: 44px;
+      padding: 0 2px;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--accent);
+    }
+
+    .project-link:hover { color: var(--accent-hover); }
+
+    .project-link svg {
+      width: 16px;
+      height: 16px;
+      transition: transform var(--motion-fast) var(--ease-out);
+    }
+
+    .project-link:hover svg { transform: translateX(3px); }
+
+    .contact {
+      margin-top: var(--space-8);
+    }
+
+    .contact-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .contact-list li {
+      display: grid;
+      grid-template-columns: 8.5rem 1fr;
+      gap: var(--space-4);
+      align-items: center;
+      min-height: 48px;
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .contact-list .label {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--fg-subtle);
+    }
+
+    .contact-list a,
+    .contact-list .value {
+      color: var(--fg);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+
+    .contact-list a:hover { color: var(--accent); }
+
+    footer.site {
+      margin-top: var(--space-8);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--border);
+      font-size: var(--text-sm);
+      color: var(--fg-subtle);
+    }
+
+    footer.site a { color: inherit; }
+
+    @media (max-width: 520px) {
+      .page { width: min(100% - 2rem, var(--content)); padding-top: var(--space-5); }
+      .contact-list li {
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: var(--space-3) 0;
+        min-height: 44px;
+      }
+      .avatar { width: 64px; height: 64px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="site">
+      <span class="mark">vesanieminen.com</span>
+      <a class="nav-link" href="https://github.com/vesanieminen">GitHub</a>
+    </header>
+
+    <section class="hero">
+      <div class="identity">
+        <img class="avatar" src="https://avatars.githubusercontent.com/u/108755?v=4" width="72" height="72" alt="Portrait of Vesa Nieminen">
+        <h1>Vesa Nieminen</h1>
+      </div>
+      <p class="lede">Software developer in Turku, Finland. I build tools that make energy data easier to see and use.</p>
+    </section>
+
+    <section aria-labelledby="projects-heading">
+      <h2 id="projects-heading">Project</h2>
+      <article class="project">
+        <h3>Liukuri</h3>
+        <p>A live dashboard of Finnish electricity prices and production, with a cost calculator that uses your own Fingrid Datahub consumption data.</p>
+        <a class="project-link" href="https://liukuri.fi" rel="noopener noreferrer">
+          liukuri.fi
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </article>
+    </section>
+
+    <section class="contact" aria-labelledby="contact-heading">
+      <h2 id="contact-heading">Contact</h2>
+      <ul class="contact-list">
+        <li>
+          <span class="label">Email</span>
+          <a href="mailto:vesa.nieminen@gmail.com">vesa.nieminen@gmail.com</a>
+        </li>
+        <li>
+          <span class="label">Phone</span>
+          <a href="tel:+358401461471">+358 40 146 1471</a>
+        </li>
+        <li>
+          <span class="label">X</span>
+          <a href="https://x.com/vesanieminen" rel="noopener noreferrer">@vesanieminen</a>
+        </li>
+        <li>
+          <span class="label">LinkedIn</span>
+          <a href="https://fi.linkedin.com/in/vnieminen" rel="noopener noreferrer">Vesa Nieminen</a>
+        </li>
+        <li>
+          <span class="label">Stack Overflow</span>
+          <a href="https://stackoverflow.com/users/963/vesa-nieminen" rel="noopener noreferrer">vesa-nieminen</a>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="site">
+      <p>Published with <a href="https://pages.github.com">GitHub Pages</a>.</p>
+    </footer>
+  </div>
+</body>
 </html>
